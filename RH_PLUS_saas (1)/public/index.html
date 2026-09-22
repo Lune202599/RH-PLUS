@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RH PLUS — Console SIRH</title>
+<style>
+  /* Carlito (métriquement compatible Calibri) auto-hébergée — aucune dépendance
+     externe, aucun envoi de données à un tiers. Licence SIL OFL 1.1 : public/fonts/OFL.txt */
+  @font-face { font-family: Carlito; font-weight: 400; font-style: normal; font-display: swap;
+    src: url("/fonts/carlito-regular.woff2") format("woff2"); }
+  @font-face { font-family: Carlito; font-weight: 700; font-style: normal; font-display: swap;
+    src: url("/fonts/carlito-bold.woff2") format("woff2"); }
+  :root { --forest: #178A4C; --forest-dark: #0E5C33; --blue: #1D6FD8; --slate: #33413A; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Calibri, Carlito, 'Segoe UI', system-ui, sans-serif; background: #fff; color: var(--slate); }
+  h1,h2,h3 { color: var(--forest-dark); margin: 0 0 .4rem; }
+  a { color: var(--blue); }
+  button { font-family: inherit; cursor: pointer; }
+  .btn { border: 0; border-radius: 9999px; padding: .55rem 1.1rem; font-size: .86rem; font-weight: 700; }
+  .btn-primary { background: linear-gradient(135deg,#178A4C,#22A85E); color: #fff; }
+  .btn-open { background: linear-gradient(135deg,#1D6FD8,#2E82EE); color: #fff; }
+  .btn-ghost { background: #fff; color: var(--slate); border: 1px solid rgba(51,65,58,.18); }
+  .btn-danger { background: #fff; color: #C62A21; border: 1px solid rgba(198,42,33,.35); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  input, select, textarea { font-family: inherit; font-size: .88rem; padding: .5rem .65rem; border: 1px solid #C9D8D0; border-radius: 10px; width: 100%; background: #fff; }
+  label { font-size: .74rem; text-transform: uppercase; letter-spacing: .04em; color: #6B7C74; display: block; margin-bottom: .2rem; }
+  .card { background: #fff; border: 1px solid rgba(23,138,76,.14); border-radius: 14px; padding: 1rem; box-shadow: 0 1px 2px rgba(16,44,28,.05); }
+  .grid { display: grid; gap: .8rem; }
+  .kpi { font-size: 1.6rem; font-weight: 700; color: var(--forest-dark); }
+  .muted { color: #6B7C74; font-size: .82rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  th { text-align: left; font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: #6B7C74; padding: .55rem .6rem; background: #F6FAF7; }
+  td { padding: .55rem .6rem; border-top: 1px solid rgba(23,138,76,.08); }
+  .badge { display: inline-block; border-radius: 9999px; padding: .15rem .6rem; font-size: .72rem; font-weight: 700; }
+  .b-green { background: #E8F5EC; color: var(--forest-dark); }
+  .b-blue { background: #E8F1FD; color: #0E3E7A; }
+  .b-warn { background: #FEF0E6; color: #B45309; }
+  .b-red { background: #FDECEA; color: #C62A21; }
+  header.top { display: flex; align-items: center; gap: .8rem; padding: .7rem 1.1rem; border-bottom: 1px solid rgba(23,138,76,.14); position: sticky; top: 0; background: rgba(255,255,255,.94); backdrop-filter: blur(6px); z-index: 20; }
+  .logo { width: 34px; height: 34px; border-radius: 9999px; background: linear-gradient(135deg,#178A4C,#1D6FD8); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: .8rem; }
+  nav.tabs { display: flex; gap: .3rem; overflow-x: auto; padding: .5rem 1.1rem; border-bottom: 1px solid rgba(23,138,76,.12); position: sticky; top: 52px; background: #fff; z-index: 10; }
+  .tab { border: 0; background: transparent; padding: .45rem .8rem; border-radius: 9999px; font-size: .84rem; font-weight: 600; color: #4C5F56; white-space: nowrap; }
+  .tab.active { background: #E8F5EC; color: var(--forest-dark); }
+  main { padding: 1.1rem; max-width: 1150px; margin: 0 auto; }
+  .login-wrap { min-height: 100vh; display: grid; place-items: center; padding: 1.5rem; background: #fff; }
+  .login-box { width: 100%; max-width: 420px; }
+  .row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: .7rem; }
+  dialog { border: 0; border-radius: 16px; padding: 0; width: min(680px, 94vw); box-shadow: 0 20px 50px rgba(12,40,24,.25); }
+  dialog::backdrop { background: rgba(15,40,26,.45); }
+  .dlg-body { padding: 1.1rem; }
+  .note { background: #F6FAF7; border-left: 3px solid var(--forest); border-radius: 10px; padding: .6rem .8rem; font-size: .82rem; color: #3C4F46; }
+  .warn { background: #FEF7EC; border-left: 3px solid #E09F1F; border-radius: 10px; padding: .6rem .8rem; font-size: .82rem; color: #7A4E05; }
+  .toast { position: fixed; right: 1rem; bottom: 1rem; background: #0E5C33; color: #fff; padding: .7rem 1rem; border-radius: 12px; font-size: .85rem; max-width: 380px; box-shadow: 0 8px 24px rgba(0,0,0,.2); z-index: 50; }
+  .toast.err { background: #C62A21; }
+  .flex-between { display: flex; align-items: center; justify-content: space-between; gap: .6rem; flex-wrap: wrap; }
+  code { background: #F2F7F4; padding: .1rem .35rem; border-radius: 6px; font-size: .82rem; }
+</style>
+</head>
+<body>
+<!-- Contenu de démarrage : si le JavaScript est lent, bloqué ou en erreur, la page
+     affiche un message utile au lieu d'un écran blanc. Il est remplacé au chargement. -->
+<div id="app"><div class="login-wrap"><div class="login-box card">
+  <div class="row" style="gap:.6rem;margin-bottom:.9rem">
+    <div class="logo">RH</div>
+    <div><div style="font-weight:700;color:var(--forest-dark)">RH PLUS</div>
+      <div class="muted">Console SIRH — chargement en cours…</div></div>
+  </div>
+  <div class="note">
+    <noscript><strong>JavaScript est désactivé dans ce navigateur.</strong> La console et le
+    portail salarié en ont besoin : activez JavaScript, puis rechargez cette page.</noscript>
+    <span id="boot-aide">Si ce message persiste, ouvrez la page directement dans un navigateur
+    (adresse du serveur RH PLUS) au lieu d'un aperçu intégré.</span>
+    <br>Vous êtes salarié(e) ? <a href="/portail">Ouvrir mon espace salarié</a>.
+  </div>
+</div></div></div>
+<dialog id="dlg"><div class="dlg-body" id="dlg-body"></div></dialog>
+<div id="toasts"></div>
+
+<script>
+/* ===================== Utilitaires ===================== */
+const $ = (sel) => document.querySelector(sel);
+const esc = (s) => String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const money = (n, cur = 'FCFA') => Math.round(Number(n || 0)).toLocaleString('fr-FR') + ' ' + cur;
+const dateFr = (d) => (d ? new Date(d).toLocaleDateString('fr-FR') : '—');
+let ME = null, COMPANY = null, VIEW = 'dashboard';
+// Jeton de session gardé en mémoire : permet à la console de fonctionner même quand le
+// navigateur refuse le cookie (aperçu intégré, iframe, cookies tiers bloqués).
+let SESSION = null;
+
+function toast(msg, err) {
+  const el = document.createElement('div');
+  el.className = 'toast' + (err ? ' err' : '');
+  el.textContent = msg;
+  $('#toasts').appendChild(el);
+  setTimeout(() => el.remove(), 5200);
+}
+
+async function api(method, url, body) {
+  const headers = { 'content-type': 'application/json' };
+  if (SESSION) headers.authorization = 'Bearer ' + SESSION;
+  const res = await fetch(url, {
+    method,
+    headers,
+    body: body ? (body instanceof Blob ? body : JSON.stringify(body)) : undefined,
+    credentials: 'same-origin',
+  });
+  const type = res.headers.get('content-type') || '';
+  if (type.includes('application/json')) {
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erreur serveur');
+    return data;
+  }
+  if (!res.ok) throw new Error('Erreur ' + res.status);
+  return res.blob();
+}
+async function download(url, filename) {
+  const blob = await api('GET', url);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function openDialog(html) { $('#dlg-body').innerHTML = html; $('#dlg').showModal(); }
+function closeDialog() { $('#dlg').close(); }
+const ICON = {
+  dash: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7"/></svg>',
+  team: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.3 3-5 6.5-5s6.5 1.7 6.5 5"/><circle cx="17.5" cy="9" r="2.5"/></svg>',
+  leave: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+  pay: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10"/></svg>',
+  vault: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
+  bill: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>',
+  shield: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 4 6v6c0 4.4 3.4 8.2 8 9.5 4.6-1.3 8-5.1 8-9.5V6z"/></svg>',
+  log: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/></svg>',
+  key: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="15" r="4"/><path d="M11 12 20 3M17 6l2 2M15 8l2 2"/></svg>',
+  globe: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 2.5 15.4 0 18M12 3c-2.5 2.6-2.5 15.4 0 18"/></svg>',
+  send: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12 21 4l-7 17-3-7z"/></svg>',
+};
+const TABS = [
+  ['dashboard', 'Tableau de bord', ICON.dash], ['employees', 'Employés', ICON.team], ['leaves', 'Congés', ICON.leave],
+  ['payroll', 'Paie', ICON.pay], ['documents', 'Coffre-fort', ICON.vault], ['billing', 'Abonnement', ICON.bill],
+  ['compliance', 'Conformité', ICON.shield], ['users', 'Comptes & accès', ICON.key], ['audit', 'Journal', ICON.log],
+];
+// Le compte plateforme (éditeur) ne voit pas les dossiers des salariés : il administre les entreprises clientes.
+const TABS_PLATEFORME = [['platform', 'Plateforme', ICON.globe], ['audit', 'Journal', ICON.log]];
+const ongletsPour = (role) => (role === 'platform_admin' ? TABS_PLATEFORME : TABS);
+
+/* ===================== Connexion ===================== */
+function renderLogin(step, ctx) {
+  $('#app').innerHTML = `
+    <div class="login-wrap"><div class="login-box card">
+      <div class="row" style="gap:.6rem;margin-bottom:.9rem">
+        <div class="logo">RH</div>
+        <div><div style="font-weight:700;color:var(--forest-dark)">RH PLUS</div><div class="muted">Console SIRH — connexion sécurisée</div></div>
+      </div>
+      <div id="login-step1" style="display:${step === 2 ? 'none' : 'block'}">
+        <h3 style="font-size:1.05rem">Connexion</h3>
+        <div class="grid" style="margin-top:.6rem">
+          <div><label>Email professionnel</label><input id="lg-email" type="email" autocomplete="username" value="${esc(ctx && ctx.email || 'admin@rhplus.ga')}"></div>
+          <div><label>Mot de passe</label><input id="lg-pass" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+          <button class="btn btn-primary" id="lg-go">Se connecter</button>
+          <div class="note">Démonstration : <code>admin@rhplus.ga</code> · mot de passe <code>RhPlus!2026</code> (le code de vérification s'affiche à l'écran hors production).
+            <br>Vous êtes salarié(e) ? <a href="/portail">Ouvrir mon espace salarié</a>.</div>
+        </div>
+      </div>
+      <div id="login-step2" style="display:${step === 2 ? 'block' : 'none'}">
+        <h3 style="font-size:1.05rem">Vérification en deux étapes</h3>
+        <p class="muted">Un code à 6 chiffres a été envoyé (SMS / email) au titulaire du compte.</p>
+        <div class="grid" style="margin-top:.6rem">
+          <div><label>Code de vérification</label><input id="lg-code" inputmode="numeric" maxlength="6" placeholder="123456"></div>
+          <button class="btn btn-primary" id="lg-verify">Valider le code</button>
+          <button class="btn btn-ghost" id="lg-back">Revenir</button>
+          ${ctx && ctx.dev ? `<div class="warn">Mode démonstration — code affiché : <strong>${esc(ctx.dev)}</strong></div>` : ''}
+        </div>
+      </div>
+    </div></div>`;
+
+  const email = () => $('#lg-email') ? $('#lg-email').value.trim() : (ctx && ctx.email);
+  if ($('#lg-go')) $('#lg-go').onclick = async () => {
+    try {
+      const r = await api('POST', '/api/auth/login', { email: email(), password: $('#lg-pass').value });
+      if (r.step === '2fa') renderLogin(2, { email: email(), dev: r.dev_code });
+      else await afterLogin();
+    } catch (e) { toast(e.message, true); }
+  };
+  if ($('#lg-verify')) $('#lg-verify').onclick = async () => {
+    try {
+      const r = await api('POST', '/api/auth/verify', { email: email(), code: $('#lg-code').value.trim() });
+      if (r && r.token) SESSION = r.token;
+      await afterLogin();
+    }
+    catch (e) { toast(e.message, true); }
+  };
+  if ($('#lg-back')) $('#lg-back').onclick = () => renderLogin(1, { email: email() });
+  if ($('#lg-pass')) $('#lg-pass').onkeydown = (e) => { if (e.key === 'Enter') $('#lg-go').click(); };
+}
+
+async function afterLogin() {
+  const me = await api('GET', '/api/auth/me');
+  ME = me.user; COMPANY = me.company;
+  toast('Bienvenue ' + ME.name + ' — ' + COMPANY.name);
+  renderShell();
+}
+
+/* ===================== Coquille ===================== */
+function renderShell() {
+  $('#app').innerHTML = `
+    <header class="top">
+      <div class="logo">RH</div>
+      <div style="line-height:1.15">
+        <div style="font-weight:700;color:var(--forest-dark)">RH PLUS</div>
+        <div class="muted">${esc(COMPANY.name)} · ${esc(COMPANY.country)} · ${esc(COMPANY.currency)}</div>
+      </div>
+      <div class="row" style="margin-left:auto">
+        <span class="badge b-blue">${esc(ME.role)}</span>
+        <span class="muted">${esc(ME.email)}</span>
+        <button class="btn btn-ghost" id="logout">Déconnexion</button>
+      </div>
+    </header>
+    <nav class="tabs">${ongletsPour(ME.role).map(([k, l, i]) => `<button class="tab" data-tab="${k}">${i} ${l}</button>`).join('')}</nav>
+    <main id="view"></main>`;
+  $('#logout').onclick = async () => { await api('POST', '/api/auth/logout'); SESSION = null; ME = null; renderLogin(1); };
+  document.querySelectorAll('.tab').forEach((b) => b.onclick = () => show(b.dataset.tab));
+  show(ME.role === 'platform_admin' ? 'platform' : 'dashboard');
+}
+
+function highlight(tab) {
+  document.querySelectorAll('.tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
+}
+async function show(tab) {
+  VIEW = tab; highlight(tab);
+  const box = $('#view');
+  box.innerHTML = '<div class="card muted">Chargement…</div>';
+  try {
+    if (tab === 'dashboard') return renderDashboard(box);
+    if (tab === 'employees') return renderEmployees(box);
+    if (tab === 'leaves') return renderLeaves(box);
+    if (tab === 'payroll') return renderPayroll(box);
+    if (tab === 'documents') return renderDocuments(box);
+    if (tab === 'billing') return renderBilling(box);
+    if (tab === 'compliance') return renderCompliance(box);
+    if (tab === 'users') return renderUsers(box);
+    if (tab === 'audit') return renderAudit(box);
+    if (tab === 'platform') return renderPlatform(box);
+  } catch (e) { box.innerHTML = `<div class="card"><strong>Erreur :</strong> ${esc(e.message)}</div>`; }
+}
+const refresh = () => show(VIEW);
+
+/* ===================== Plateforme (éditeur RH PLUS) ===================== */
+const PAYS = ['Gabon', 'Sénégal', 'Cameroun', "Côte d'Ivoire", 'France', 'Maroc'];
+async function renderPlatform(box) {
+  const d = await api('GET', '/api/platform/overview');
+  const t = d.totaux;
+  const val = await api('GET', '/api/platform/validations');
+  const msg = await api('GET', '/api/platform/messages');
+  const canal = (c) => c && c.configured
+    ? `<span class="badge b-green">${esc(c.mode)}</span>`
+    : `<span class="badge b-warn">non configuré</span>`;
+  box.innerHTML = `
+    <div class="flex-between"><h2>Entreprises clientes</h2>
+      <span class="muted">Éditeur : ${esc(d.editeur.name)} · ${d.entreprises.length} entreprise(s) cliente(s)</span></div>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(155px,1fr));margin:.8rem 0 1rem">
+      ${kpiCard('Entreprises', t.entreprises, t.actives + ' active(s), ' + t.suspendues + ' suspendue(s)')}
+      ${kpiCard('Abonnement mensuel', money(t.mrr, 'FCFA'), 'revenu récurrent')}
+      ${kpiCard('Salariés gérés', t.effectif, 'toutes entreprises')}
+      ${kpiCard('Comptes ouverts', t.comptes, 'utilisateurs')}
+      ${kpiCard('À mettre en conformité', t.a_mettre_en_conformite, 'barème ou APDPVP')}
+      ${kpiCard('Factures impayées', t.impayees, 'toutes entreprises')}
+    </div>
+
+    <div class="card">
+      <div class="flex-between"><h3 style="font-size:1rem">Portefeuille</h3>
+        <button class="btn btn-open" id="p-new">Créer une entreprise</button></div>
+      <table><thead><tr><th>Entreprise</th><th>Pays</th><th>Offre</th><th>Effectif</th><th>Abonnement</th><th>Barème de paie</th><th>APDPVP</th><th></th></tr></thead><tbody>
+      ${d.entreprises.map((e) => `<tr>
+        <td><strong>${esc(e.name)}</strong><div class="muted">${esc(e.city || '—')} · cliente depuis le ${dateFr(e.created_at)}</div></td>
+        <td>${esc(e.country)}<div class="muted">${esc(e.currency)}</div></td>
+        <td>${esc(e.plan)}${e.usage.depassement ? '<div class="muted">hors plafond</div>' : ''}</td>
+        <td>${e.usage.effectif}<div class="muted">${e.usage.comptes} compte(s)</div></td>
+        <td>${e.suspended ? '<span class="badge b-red">accès suspendu</span>' : money(e.usage.mrr, 'FCFA') + '<div class="muted">par mois</div>'}</td>
+        <td>${e.conformite.baremes.a_jour
+          ? `<span class="badge b-green">${esc(e.conformite.baremes.version)} validé</span><div class="muted">jusqu'au ${dateFr(e.conformite.baremes.expire_le)}</div>`
+          : '<span class="badge b-warn">à valider</span>'}</td>
+        <td>${e.conformite.apdpvp.a_jour ? '<span class="badge b-green">déclaré</span>' : '<span class="badge b-warn">non déclaré</span>'}
+          <div class="muted">${esc(e.conformite.hosting || 'hébergement à préciser')}</div></td>
+        <td class="row"><button class="btn btn-ghost" data-fiche="${e.id}">Détail</button>
+          <button class="btn ${e.suspended ? 'btn-open' : 'btn-danger'}" data-susp="${e.id}" data-etat="${e.suspended ? 0 : 1}">${e.suspended ? 'Réactiver' : 'Suspendre'}</button></td></tr>`).join('')}
+      </tbody></table>
+    </div>
+
+    <div class="grid" style="grid-template-columns:1.25fr 1fr;margin-top:1rem">
+      <div class="card">
+        <h3 style="font-size:1rem">Barèmes de paie &amp; validations</h3>
+        <div class="muted">Une validation d'expert-comptable vaut 12 mois. Tant qu'elle manque, les bulletins de l'entreprise restent en brouillon et ne peuvent pas être émis.</div>
+        <table style="margin-top:.6rem"><thead><tr><th>Pays</th><th>Version</th><th>État</th><th>Cabinet</th><th></th></tr></thead><tbody>
+        ${d.entreprises.length === 0 ? '' : ''}
+        ${val.pays.map((p) => {
+          const v = val.validations.find((x) => x.country === p.country && x.active);
+          return `<tr><td>${esc(p.country)}</td><td><code>${esc(p.version)}</code></td>
+            <td>${v ? `<span class="badge b-green">validé</span><div class="muted">jusqu'au ${dateFr(v.expires_at)}</div>` : '<span class="badge b-warn">non validé</span>'}</td>
+            <td>${esc(v ? v.cabinet : '—')}${v && v.order_ref ? `<div class="muted">réf. ${esc(v.order_ref)}</div>` : ''}</td>
+            <td class="row"><button class="btn btn-ghost" data-note="${esc(p.country)}">Note à signer</button>
+              <button class="btn btn-open" data-valider="${esc(p.country)}" data-version="${esc(p.version)}">Enregistrer</button></td></tr>`;
+        }).join('')}
+        </tbody></table>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size:1rem">Envois de notifications</h3>
+        <div class="muted">Email : ${canal(msg.etat.email)} · SMS : ${canal(msg.etat.sms)}
+          ${msg.etat.pret_pour_la_production ? '' : '<div class="warn" style="margin-top:.4rem">Mode console : les codes de connexion s’affichent à l’écran au lieu d’être envoyés. Renseignez RHPLUS_MAIL et RHPLUS_SMS pour passer en envoi réel.</div>'}</div>
+        <div class="grid" style="margin-top:.6rem">
+          <div class="row" style="gap:.5rem;flex-wrap:wrap">
+            <input id="m-mail" placeholder="email de test" style="flex:1;min-width:150px">
+            <input id="m-tel" placeholder="+241 06 00 00 00" style="flex:1;min-width:130px">
+            <button class="btn btn-open" id="m-test">Tester</button>
+          </div>
+        </div>
+        <h3 style="font-size:1rem;margin-top:1rem">Derniers messages (${msg.messages.length})</h3>
+        <div class="muted" style="max-height:220px;overflow:auto">
+          ${msg.messages.slice(0, 12).map((m) => `${esc(m.channel)} · ${esc(m.recipient)} — ${esc(m.purpose)} <span class="badge ${m.status === 'envoye' ? 'b-green' : 'b-red'}">${esc(m.status)}</span> <span class="muted">${dateFr(m.created_at)}</span>`).join('<br>') || 'aucun message'}
+        </div>
+      </div>
+    </div>`;
+
+  /* --- actions --- */
+  $('#p-new').onclick = () => {
+    openDialog(`
+    <div class="flex-between"><h3>Nouvelle entreprise cliente</h3><span class="badge b-blue">éditeur</span></div>
+    <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:.6rem">
+      <div><label>Raison sociale</label><input id="n-nom" placeholder="Ex. Société Gabonaise de Services"></div>
+      <div><label>Pays (détermine la devise et le droit applicable)</label><select id="n-pays">${PAYS.map((x) => `<option>${esc(x)}</option>`).join('')}</select></div>
+      <div><label>Ville</label><input id="n-ville" placeholder="Libreville"></div>
+      <div><label>Offre</label><select id="n-offre">${d.offres.map((o) => `<option value="${esc(o.id)}">${esc(o.id)} — ${money(o.prix, 'FCFA')}/mois (${o.plafond} salariés)</option>`).join('')}</select></div>
+      <div><label>Email de l'administrateur</label><input id="n-mail" placeholder="direction@client.ga"></div>
+      <div><label>Nom de l'administrateur</label><input id="n-nomadmin" placeholder="Prénom Nom"></div>
+      <div><label>Mobile (codes de connexion)</label><input id="n-tel" placeholder="+241 ..."></div>
+      <div><label>Mot de passe provisoire (10 caractères minimum)</label><input id="n-pass" value="${esc(motDePasseProvisoire())}"></div>
+    </div>
+    <div class="row" style="justify-content:flex-end;margin-top:1rem">
+      <button class="btn btn-ghost" id="n-annuler">Annuler</button>
+      <button class="btn btn-primary" id="n-creer">Créer l'entreprise</button></div>`);
+
+    $('#n-annuler').onclick = closeDialog;
+    $('#n-creer').onclick = async () => {
+      try {
+        const r = await api('POST', '/api/platform/companies', {
+          company: { name: $('#n-nom').value.trim(), country: $('#n-pays').value, city: $('#n-ville').value.trim(), plan: $('#n-offre').value },
+          admin: { email: $('#n-mail').value.trim(), name: $('#n-nomadmin').value.trim(), phone: $('#n-tel').value.trim(), password: $('#n-pass').value },
+        });
+        closeDialog(); toast('Entreprise créée : ' + r.company.name); refresh();
+      } catch (e) { toast(e.message, true); }
+    };
+  };
+
+  box.querySelectorAll('[data-susp]').forEach((b) => b.onclick = async () => {
+    const suspendre = b.dataset.etat === '1';
+    if (suspendre && !confirm('Suspendre cet accès ? Les utilisateurs de cette entreprise ne pourront plus se connecter.')) return;
+    try {
+      await api('PATCH', '/api/platform/companies/' + b.dataset.susp, { suspended: suspendre });
+      toast(suspendre ? 'Accès suspendu' : 'Accès rétabli'); refresh();
+    } catch (e) { toast(e.message, true); }
+  });
+
+  box.querySelectorAll('[data-note]').forEach((b) => b.onclick = async () => {
+    try { await download('/api/platform/validations/note.pdf?country=' + encodeURIComponent(b.dataset.note), 'Note_validation_baremes_' + b.dataset.note + '.pdf'); toast('Note de validation générée — à faire signer par le cabinet'); }
+    catch (e) { toast(e.message, true); }
+  });
+
+  box.querySelectorAll('[data-valider]').forEach((b) => b.onclick = async () => {
+    openDialog(`
+      <div class="flex-between"><h3>Validation du barème — ${esc(b.dataset.valider)}</h3><span class="badge b-blue">${esc(b.dataset.version)}</span></div>
+      <div class="muted">À enregistrer dès réception de la note signée. La validation court sur 12 mois et débloque l'émission des bulletins.</div>
+      <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:.6rem">
+        <div><label>Cabinet / expert-comptable</label><input id="v-cab" placeholder="Cabinet Fiduciaire de l'Estuaire"></div>
+        <div><label>Expert signataire</label><input id="v-exp" placeholder="M. Nzé, expert-comptable"></div>
+        <div><label>Référence de la lettre ou du rapport</label><input id="v-ref" placeholder="VAL-GA-2026-014"></div>
+        <div><label>Date de signature</label><input id="v-date" type="date" value="${new Date().toISOString().slice(0, 10)}"></div>
+      </div>
+      <div class="row" style="justify-content:flex-end;margin-top:1rem">
+        <button class="btn btn-ghost" id="v-annuler">Annuler</button>
+        <button class="btn btn-primary" id="v-enr">Enregistrer la validation</button></div>`);
+    $('#v-annuler').onclick = closeDialog;
+    $('#v-enr').onclick = async () => {
+      try {
+        await api('POST', '/api/platform/validations', {
+          country: b.dataset.valider, version: b.dataset.version, cabinet: $('#v-cab').value.trim(),
+          expert_name: $('#v-exp').value.trim(), order_ref: $('#v-ref').value.trim(), validated_at: $('#v-date').value,
+        });
+        closeDialog(); toast('Barème validé — bulletins débloqués'); refresh();
+      } catch (e) { toast(e.message, true); }
+    };
+  });
+
+  $('#m-test').onclick = async () => {
+    try {
+      const r = await api('POST', '/api/platform/messaging/test', { email: $('#m-mail').value.trim(), phone: $('#m-tel').value.trim() });
+      const resume = Object.entries(r.resultats).map(([k, v]) => k + ' : ' + (v.ok ? 'envoyé (' + v.mode + ')' : 'échec')).join(' · ');
+      toast(resume || 'Aucun canal testé', !Object.values(r.resultats).every((v) => v.ok));
+      refresh();
+    } catch (e) { toast(e.message, true); }
+  };
+
+  box.querySelectorAll('[data-fiche]').forEach((b) => b.onclick = async () => {
+    try {
+      const f = await api('GET', '/api/platform/companies/' + b.dataset.fiche);
+      openDialog(`
+        <div class="flex-between"><h3>${esc(f.company.name)}</h3>
+          <span class="badge ${f.company.suspended ? 'b-red' : 'b-green'}">${f.company.suspended ? 'accès suspendu' : 'active'}</span></div>
+        <div class="muted">${esc(f.company.country)} · ${esc(f.company.currency)} · offre ${esc(f.company.plan)} · RCCM ${esc(f.company.rccm || '—')} · NIF ${esc(f.company.nif || '—')}</div>
+        <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr));margin-top:.7rem">
+          ${kpiCard('Salariés', f.usage.effectif, 'dossier')}
+          ${kpiCard('Comptes', f.usage.comptes, 'utilisateurs')}
+          ${kpiCard('Bulletins', f.usage.bulletins, f.usage.bulletins_emis + ' émis')}
+          ${kpiCard('Factures', f.usage.factures, f.usage.factures_impayees + ' à régler')}
+        </div>
+        <h3 style="font-size:.95rem;margin-top:.9rem">Conformité</h3>
+        <div class="note">Barème ${esc(f.conformite.baremes.version)} : ${f.conformite.baremes.a_jour ? 'validé' : 'non validé'}
+          ${f.conformite.baremes.cabinet ? '— ' + esc(f.conformite.baremes.cabinet) : ''}<br>
+          APDPVP : ${esc(f.conformite.apdpvp.status)}${f.conformite.apdpvp.num ? ' (récépissé ' + esc(f.conformite.apdpvp.num) + ')' : ''}<br>
+          Hébergement : ${esc(f.conformite.hosting || 'à préciser')} · Délégué à la protection des données : ${esc(f.conformite.dpo ? f.conformite.dpo.nom : 'à désigner')}</div>
+        <h3 style="font-size:.95rem;margin-top:.9rem">Comptes (${f.comptes.length})</h3>
+        <div class="muted">${f.comptes.map((u) => `${esc(u.email)} — ${esc(u.role)}`).join('<br>') || 'aucun compte'}</div>
+        <h3 style="font-size:.95rem;margin-top:.9rem">Facturation</h3>
+        <div class="muted">${f.factures.map((i) => `${esc(i.ref)} — ${money(i.amount_cents / 100, 'FCFA')} — ${esc(i.status)}`).join('<br>') || 'aucune facture'}</div>
+        <div class="row" style="justify-content:flex-end;margin-top:1rem;flex-wrap:wrap">
+          <button class="btn btn-ghost" id="f-dpo">Délégué &amp; APDPVP</button>
+          <button class="btn btn-ghost" id="f-apdpvp">Dossier APDPVP (PDF)</button>
+          <button class="btn btn-open" id="f-offre">Changer d'offre</button>
+          <button class="btn btn-ghost" id="f-fermer">Fermer</button>
+        </div>`);
+      $('#f-fermer').onclick = closeDialog;
+      $('#f-apdpvp').onclick = async () => {
+        try { await download('/api/platform/companies/' + f.company.id + '/dossier-apdpvp.pdf', 'Dossier_APDPVP_' + f.company.name.replace(/\W+/g, '_') + '.pdf'); toast('Dossier de déclaration généré'); }
+        catch (e) { toast(e.message, true); }
+      };
+      $('#f-offre').onclick = async () => {
+        const offre = prompt('Nouvelle offre (starter, pme, entreprise) :', f.company.plan);
+        if (!offre) return;
+        try { await api('PATCH', '/api/platform/companies/' + f.company.id, { plan: offre.trim() }); closeDialog(); toast('Offre mise à jour : ' + offre.trim()); refresh(); }
+        catch (e) { toast(e.message, true); }
+      };
+      $('#f-dpo').onclick = async () => {
+        const nom = prompt('Nom du délégué à la protection des données :', f.conformite.dpo ? f.conformite.dpo.nom : '');
+        if (nom === null) return;
+        const email = prompt('Email du délégué :', f.conformite.dpo ? f.conformite.dpo.email || '' : '') || null;
+        const num = prompt('Numéro de récépissé APDPVP (laisser vide si non déclaré) :', f.conformite.apdpvp.num || '') || null;
+        try {
+          await api('PATCH', '/api/platform/companies/' + f.company.id, num
+            ? { dpo_name: nom, dpo_email: email, apdpvp_num: num, apdpvp_date: new Date().toISOString().slice(0, 10), apdpvp_status: 'Déclaré' }
+            : { dpo_name: nom, dpo_email: email });
+          closeDialog(); toast('Conformité mise à jour'); refresh();
+        } catch (e) { toast(e.message, true); }
+      };
+    } catch (e) { toast(e.message, true); }
+  });
+}
+
+/* ===================== Tableau de bord ===================== */
+async function renderDashboard(box) {
+  const d = await api('GET', '/api/dashboard');
+  const k = d.kpi;
+  box.innerHTML = `
+    <div class="flex-between"><h2>Tableau de bord</h2>
+      <span class="muted">Conformité APDPVP : ${esc(d.compliance.apdpvp_status)} · Hébergement : ${esc(d.compliance.hosting)}</span></div>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin:.8rem 0 1rem">
+      ${kpiCard('Effectif', k.effectif, 'salariés suivis')}
+      ${kpiCard('Masse salariale', money(k.masse_salariale, COMPANY.currency), 'par mois')}
+      ${kpiCard('Contrats à échéance', k.contrats_a_echeance_60j, 'sous 60 jours')}
+      ${kpiCard('Congés à valider', k.conges_en_attente, 'demandes en attente')}
+      ${kpiCard('Bulletins générés', k.bulletins_generes, 'période en cours')}
+      ${kpiCard('Factures à régler', k.factures_impayees, 'abonnement')}
+    </div>
+    <div class="grid" style="grid-template-columns:1.4fr 1fr">
+      <div class="card">
+        <div class="flex-between"><h3 style="font-size:1rem">Alertes de contrats (60 / 30 / 15 jours)</h3>
+          <button class="btn btn-ghost" id="go-contracts">Voir les contrats</button></div>
+        ${d.alerts.length ? `<table><thead><tr><th>Salarié</th><th>Contrat</th><th>Échéance</th><th>Jours</th><th></th></tr></thead><tbody>
+          ${d.alerts.map((a) => `<tr><td>${esc(a.employee)}</td><td>${esc(a.type)}</td><td>${dateFr(a.end_date)}</td>
+            <td><span class="badge ${a.level === 'critique' ? 'b-red' : a.level === 'eleve' ? 'b-warn' : 'b-blue'}">${a.days} j</span></td>
+            <td><button class="btn btn-ghost" data-renew="${a.employee_id}">Renouveler</button></td></tr>`).join('')}
+        </tbody></table>` : '<div class="note">Aucune échéance dans les 60 prochains jours. Tout est à jour.</div>'}
+      </div>
+      <div class="card">
+        <h3 style="font-size:1rem">Paie &amp; conformité</h3>
+        ${d.payroll.validated
+          ? `<div class="note">Barèmes de paie validés par <strong>${esc(d.payroll.validated_by)}</strong> le ${dateFr(d.payroll.validated_at)}. Les bulletins peuvent être émis.</div>`
+          : `<div class="warn">Barèmes de paie <strong>non validés</strong> : les bulletins restent en brouillon jusqu'à la validation par votre expert-comptable.</div>`}
+        <div class="grid" style="margin-top:.7rem">
+          <button class="btn btn-open" id="go-payroll">Ouvrir la paie</button>
+          <button class="btn btn-ghost" id="go-compliance">Conformité &amp; données personnelles</button>
+        </div>
+        <h3 style="font-size:1rem;margin-top:1rem">Dernières actions</h3>
+        <div class="muted">${d.recent_audit.map((a) => `${esc(a.action)} — ${esc(a.details || '')} <span class="muted">(${dateFr(a.at)})</span>`).join('<br>')}</div>
+      </div>
+    </div>`;
+  $('#go-payroll').onclick = () => show('payroll');
+  $('#go-compliance').onclick = () => show('compliance');
+  $('#go-contracts').onclick = () => show('employees');
+  box.querySelectorAll('[data-renew]').forEach((b) => b.onclick = () => show('employees'));
+}
+const kpiCard = (label, value, sub) => `<div class="card"><div class="muted">${label}</div><div class="kpi">${value}</div><div class="muted">${sub}</div></div>`;
+
+/* ===================== Employés ===================== */
+async function renderEmployees(box) {
+  const { employees } = await api('GET', '/api/employees');
+  const canEdit = ['admin', 'rh'].includes(ME.role);
+  box.innerHTML = `
+    <div class="flex-between"><h2>Employés</h2>
+      <div class="row">${canEdit ? '<button class="btn btn-primary" id="new-emp">Nouveau salarié</button>' : ''}
+      <span class="muted">${employees.length} dossier(s)</span></div></div>
+    <div class="card" style="margin-top:.8rem;overflow:auto">
+      <table><thead><tr><th>Matricule</th><th>Nom</th><th>Poste</th><th>Contrat</th><th>Statut</th><th>Salaire</th><th>N° CNSS</th><th></th></tr></thead>
+      <tbody>${employees.map((e) => `<tr>
+        <td><code>${esc(e.matricule)}</code></td><td>${esc(e.name)}</td><td>${esc(e.role || '—')}<div class="muted">${esc(e.dept || '')}</div></td>
+        <td>${esc(e.contract)}</td><td><span class="badge ${e.status === 'Présent' ? 'b-green' : 'b-blue'}">${esc(e.status)}</span></td>
+        <td>${money(e.salary, COMPANY.currency)}</td><td>${esc(e.cnss_no_mask || '—')}</td>
+        <td class="row"><button class="btn btn-ghost" data-view="${e.id}">Fiche</button></td></tr>`).join('')}
+      </tbody></table>
+      ${employees.length ? '' : '<div class="note" style="margin-top:.6rem">Aucun salarié enregistré.</div>'}
+    </div>`;
+  box.querySelectorAll('[data-view]').forEach((b) => b.onclick = () => openEmployee(Number(b.dataset.view)));
+  if ($('#new-emp')) $('#new-emp').onclick = openNewEmployee;
+}
+
+function openNewEmployee() {
+  openDialog(`
+    <h3>Nouveau salarié</h3>
+    <form id="f-emp" class="grid" style="margin-top:.6rem">
+      <div class="cols">
+        <div><label>Nom complet *</label><input name="name" required></div>
+        <div><label>Poste</label><input name="role"></div>
+        <div><label>Département</label><input name="dept"></div>
+        <div><label>Contrat</label><select name="contract"><option>CDI</option><option>CDD</option><option>Stage</option><option>Alternance</option></select></div>
+        <div><label>Date d'entrée</label><input name="hired" type="date"></div>
+        <div><label>Salaire brut mensuel</label><input name="salary" type="number" min="0" step="1000" value="450000"></div>
+        <div><label>N° CNSS / CNAMGS</label><input name="cnss_no" placeholder="chiffré en base"></div>
+        <div><label>Origine du recrutement</label><select name="origin">
+          <option>RH PLUS — Espace Talent</option><option>Candidature physique (dépôt de dossier)</option><option>Candidature spontanée</option>
+          <option>Cooptation interne</option><option>LinkedIn</option><option>Cabinet de recrutement</option><option>Forum écoles / alternance</option><option>Autre</option></select></div>
+        <div><label>Email</label><input name="email" type="email"></div>
+        <div><label>Téléphone</label><input name="phone"></div>
+      </div>
+      <div class="row" style="justify-content:flex-end"><button type="button" class="btn btn-ghost" id="f-cancel">Annuler</button>
+        <button class="btn btn-primary" type="submit">Créer le dossier</button></div>
+    </form>`);
+  $('#f-cancel').onclick = closeDialog;
+  $('#f-emp').onsubmit = async (e) => {
+    e.preventDefault();
+    const f = Object.fromEntries(new FormData(e.target).entries());
+    try { const r = await api('POST', '/api/employees', f); closeDialog(); toast('Salarié créé — matricule ' + r.matricule); refresh(); }
+    catch (err) { toast(err.message, true); }
+  };
+}
+
+async function openEmployee(id) {
+  const d = await api('GET', '/api/employees/' + id);
+  const e = d.employee;
+  const canDelete = ME.role === 'admin';
+  openDialog(`
+    <div class="flex-between"><h3>${esc(e.name)}</h3><span class="badge b-green">${esc(e.matricule)}</span></div>
+    <div class="muted">${esc(e.role || '')} — ${esc(e.dept || '')} · ${esc(e.contract)} · entrée le ${dateFr(e.hired)}</div>
+    <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:.8rem">
+      <div class="card"><div class="muted">Salaire brut</div><div class="kpi" style="font-size:1.2rem">${money(e.salary, COMPANY.currency)}</div></div>
+      <div class="card"><div class="muted">N° CNSS (déchiffré)</div><div class="kpi" style="font-size:1.2rem">${esc(e.cnss_no || '—')}</div></div>
+    </div>
+    <h3 style="font-size:.95rem;margin-top:.9rem">Parcours &amp; carrière</h3>
+    <div class="note">Origine : <strong>${esc(d.career.source)}</strong> · entrée le ${dateFr(d.career.entry.date)} comme ${esc(d.career.entry.role || '—')}
+      <br>${d.career.steps.map((s) => `${dateFr(s.date)} — ${esc(s.type)} (${esc(s.status)})`).join(' · ') || 'aucun contrat enregistré'}</div>
+    <h3 style="font-size:.95rem;margin-top:.9rem">Congés (${d.leaves.length})</h3>
+    <div class="muted">${d.leaves.map((l) => `${esc(l.type)} du ${dateFr(l.from_date)} au ${dateFr(l.to_date)} — ${esc(l.status)}`).join('<br>') || 'aucune demande'}</div>
+    <h3 style="font-size:.95rem;margin-top:.9rem">Bulletins (${d.payslips.length})</h3>
+    <div class="muted">${d.payslips.map((p) => `${esc(p.period)} — net ${money(p.net, p.currency)} (${esc(p.status)})`).join('<br>') || 'aucun bulletin'}</div>
+    <h3 style="font-size:.95rem;margin-top:.9rem">Documents chiffrés (${d.documents.length})</h3>
+    <div class="muted">${d.documents.map((x) => `${esc(x.name)} — ${esc(x.folder)}`).join('<br>') || 'aucun document'}</div>
+    <div class="row" style="justify-content:flex-end;margin-top:1rem">
+      ${canDelete ? `<button class="btn btn-danger" id="f-erase">Droit à l'effacement</button>` : ''}
+      <button class="btn btn-ghost" id="f-dsar">Export des données (droit d'accès)</button>
+      <button class="btn btn-open" id="f-close">Fermer</button>
+    </div>`);
+  $('#f-close').onclick = closeDialog;
+  $('#f-dsar').onclick = async () => {
+    try {
+      const data = await api('GET', `/api/compliance/dsar/${e.id}`);
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `export_donnees_${e.matricule}.json`; a.click();
+      toast('Export des données généré (droit d\'accès)');
+    } catch (err) { toast(err.message, true); }
+  };
+  if ($('#f-erase')) $('#f-erase').onclick = async () => {
+    if (!confirm('Anonymiser définitivement ce salarié ? (les bulletins sont conservés — obligation légale)')) return;
+    try { await api('POST', `/api/compliance/erase/${e.id}`, {}); closeDialog(); toast('Salarié anonymisé — action journalisée'); refresh(); }
+    catch (err) { toast(err.message, true); }
+  };
+}
+
+/* ===================== Congés ===================== */
+async function renderLeaves(box) {
+  const { leaves } = await api('GET', '/api/leaves');
+  const { employees } = await api('GET', '/api/employees');
+  const nameOf = (id) => (employees.find((e) => e.id === id) || {}).name || ('Salarié #' + id);
+  const canDecide = ['admin', 'rh', 'manager'].includes(ME.role);
+  box.innerHTML = `
+    <div class="flex-between"><h2>Congés &amp; absences</h2><button class="btn btn-primary" id="new-leave">Nouvelle demande</button></div>
+    <div class="card" style="margin-top:.8rem;overflow:auto">
+      <table><thead><tr><th>Salarié</th><th>Type</th><th>Du</th><th>Au</th><th>Jours</th><th>Statut</th><th></th></tr></thead>
+      <tbody>${leaves.map((l) => `<tr><td>${esc(nameOf(l.employee_id))}</td><td>${esc(l.type)}</td><td>${dateFr(l.from_date)}</td><td>${dateFr(l.to_date)}</td>
+        <td>${l.days}</td><td><span class="badge ${l.status === 'Validée' ? 'b-green' : l.status === 'Refusée' ? 'b-red' : 'b-warn'}">${esc(l.status)}</span></td>
+        <td class="row">${l.status === 'En attente' && canDecide ? `<button class="btn btn-primary" data-ok="${l.id}">Valider</button><button class="btn btn-danger" data-no="${l.id}">Refuser</button>` : ''}</td></tr>`).join('')}
+      </tbody></table>
+      ${leaves.length ? '' : '<div class="note">Aucune demande de congé.</div>'}
+    </div>`;
+  box.querySelectorAll('[data-ok]').forEach((b) => b.onclick = async () => { await api('POST', `/api/leaves/${b.dataset.ok}/decide`, { approve: true }); toast('Congé validé'); refresh(); });
+  box.querySelectorAll('[data-no]').forEach((b) => b.onclick = async () => { await api('POST', `/api/leaves/${b.dataset.no}/decide`, { approve: false }); toast('Congé refusé'); refresh(); });
+  $('#new-leave').onclick = () => {
+    openDialog(`<h3>Nouvelle demande de congé</h3>
+      <form id="f-leave" class="grid" style="margin-top:.6rem">
+        <div class="cols">
+          <div><label>Salarié</label><select name="employee_id">${employees.map((e) => `<option value="${e.id}">${esc(e.name)}</option>`).join('')}</select></div>
+          <div><label>Type</label><select name="type"><option>Congé annuel</option><option>Congé maladie</option><option>Congé maternité</option><option>Permission exceptionnelle</option></select></div>
+          <div><label>Du</label><input name="from_date" type="date" required></div>
+          <div><label>Au</label><input name="to_date" type="date" required></div>
+        </div>
+        <div><label>Motif (facultatif)</label><input name="reason"></div>
+        <div class="row" style="justify-content:flex-end"><button type="button" class="btn btn-ghost" id="f-cancel">Annuler</button><button class="btn btn-primary">Envoyer</button></div>
+      </form>`);
+    $('#f-cancel').onclick = closeDialog;
+    $('#f-leave').onsubmit = async (ev) => {
+      ev.preventDefault();
+      try { await api('POST', '/api/leaves', Object.fromEntries(new FormData(ev.target).entries())); closeDialog(); toast('Demande enregistrée'); refresh(); }
+      catch (err) { toast(err.message, true); }
+    };
+  };
+}
+
+/* ===================== Paie ===================== */
+async function renderPayroll(box) {
+  const params = await api('GET', '/api/payroll/params');
+  const { payslips } = await api('GET', '/api/payslips');
+  const { employees } = await api('GET', '/api/employees');
+  const nameOf = (id) => (employees.find((e) => e.id === id) || {}).name || ('Salarié #' + id);
+  const canGen = ['admin', 'rh'].includes(ME.role);
+  box.innerHTML = `
+    <div class="flex-between"><h2>Paie — ${esc(params.country)}</h2>
+      <span class="muted">${esc(params.law)} · ${params.currency}</span></div>
+    ${params.validated_by
+      ? `<div class="note" style="margin-top:.6rem">Barèmes validés par <strong>${esc(params.validated_by)}</strong> le ${dateFr(params.validated_at)} — les bulletins peuvent être émis.</div>`
+      : `<div class="warn" style="margin-top:.6rem">${esc(params.warning)} Les bulletins restent en <strong>brouillon</strong> jusqu'à la validation (onglet Conformité).</div>`}
+    <div class="card" style="margin-top:.8rem">
+      <h3 style="font-size:1rem">Barèmes appliqués</h3>
+      <div class="muted">Retraite ${(params.rates.retraite_er * 100).toFixed(2)} % / ${(params.rates.retraite_ee * 100).toFixed(2)} % · Santé ${(params.rates.sante_er * 100).toFixed(2)} % / ${(params.rates.sante_ee * 100).toFixed(2)} % ·
+        AT ${(params.rates.at_er * 100).toFixed(2)} % · Famille ${(params.rates.famille_er * 100).toFixed(2)} % · Formation ${(params.rates.formation_er * 100).toFixed(2)} % ·
+        IRPP ${(params.rates.irpp_ee * 100).toFixed(2)} %${params.rates.contribution_ee ? ' · Contribution ' + (params.rates.contribution_ee * 100).toFixed(2) + ' %' : ''}</div>
+    </div>
+    <div class="flex-between" style="margin-top:.9rem"><h3 style="font-size:1rem">Bulletins</h3>
+      ${canGen ? `<div class="row"><input id="p-period" type="month" value="${new Date().toISOString().slice(0, 7)}" style="width:auto">
+        <button class="btn btn-primary" id="gen-all">Générer pour tout l'effectif</button></div>` : ''}</div>
+    <div class="card" style="margin-top:.5rem;overflow:auto">
+      <table><thead><tr><th>Salarié</th><th>Période</th><th>Brut</th><th>Net à payer</th><th>Statut</th><th></th></tr></thead>
+      <tbody>${payslips.map((p) => `<tr><td>${esc(nameOf(p.employee_id))}</td><td>${esc(p.period)}</td>
+        <td>${money(p.gross, p.currency)}</td><td><strong>${money(p.net, p.currency)}</strong></td>
+        <td><span class="badge ${p.status === 'emis' ? 'b-green' : 'b-warn'}">${esc(p.status)}</span></td>
+        <td class="row"><button class="btn btn-ghost" data-pdf="${p.id}">PDF</button>
+        ${ME.role === 'admin' && p.status !== 'emis' ? `<button class="btn btn-open" data-emit="${p.id}">Émettre</button>` : ''}</td></tr>`).join('')}
+      </tbody></table>
+      ${payslips.length ? '' : '<div class="note">Aucun bulletin généré.</div>'}
+    </div>`;
+  if ($('#gen-all')) $('#gen-all').onclick = async () => {
+    try {
+      const r = await api('POST', '/api/payslips/generate', { period: $('#p-period').value });
+      toast(`${r.count} bulletin(s) généré(s)${r.rates_validated ? '' : ' — en brouillon (barèmes non validés)'}`);
+      refresh();
+    } catch (e) { toast(e.message, true); }
+  };
+  box.querySelectorAll('[data-pdf]').forEach((b) => b.onclick = () => download(`/api/payslips/${b.dataset.pdf}/pdf`, 'bulletin.pdf').catch((e) => toast(e.message, true)));
+  box.querySelectorAll('[data-emit]').forEach((b) => b.onclick = async () => {
+    try { await api('POST', `/api/payslips/${b.dataset.emit}/emit`, {}); toast('Bulletin émis'); refresh(); } catch (e) { toast(e.message, true); }
+  });
+}
+
+/* ===================== Coffre-fort ===================== */
+async function renderDocuments(box) {
+  const { employees } = await api('GET', '/api/employees');
+  const { documents } = await api('GET', '/api/documents');
+  const nameOf = (id) => (employees.find((e) => e.id === id) || {}).name || 'Entreprise';
+  const canUp = ['admin', 'rh'].includes(ME.role);
+  box.innerHTML = `
+    <div class="flex-between"><h2>Coffre-fort numérique</h2>
+      ${canUp ? '<button class="btn btn-primary" id="up-doc">Archiver un document</button>' : ''}</div>
+    <div class="note" style="margin-top:.6rem">Chaque document est chiffré en base (AES-256-GCM), son empreinte SHA-256 est enregistrée et chaque consultation est journalisée.</div>
+    <div class="card" style="margin-top:.8rem;overflow:auto">
+      <table><thead><tr><th>Document</th><th>Dossier</th><th>Salarié</th><th>Taille</th><th>Empreinte</th><th>Déposé le</th><th></th></tr></thead>
+      <tbody>${documents.map((d) => `<tr><td>${esc(d.name)}</td><td>${esc(d.folder)}</td><td>${esc(d.employee_id ? nameOf(d.employee_id) : 'Entreprise')}</td>
+        <td>${(d.size / 1024).toFixed(1)} Ko</td><td><code>${esc(String(d.sha256).slice(0, 12))}…</code></td><td>${dateFr(d.created_at)}</td>
+        <td class="row"><button class="btn btn-ghost" data-dl="${d.id}">Télécharger</button>
+        ${ME.role === 'admin' ? `<button class="btn btn-danger" data-del="${d.id}">Détruire</button>` : ''}</td></tr>`).join('')}
+      </tbody></table>
+      ${documents.length ? '' : '<div class="note">Aucun document archivé.</div>'}
+    </div>`;
+  box.querySelectorAll('[data-dl]').forEach((b) => b.onclick = () => {
+    const d = documents.find((x) => x.id === Number(b.dataset.dl));
+    download(`/api/documents/${d.id}/download`, d.name).catch((e) => toast(e.message, true));
+  });
+  box.querySelectorAll('[data-del]').forEach((b) => b.onclick = async () => {
+    if (!confirm('Détruire définitivement ce document ?')) return;
+    await api('DELETE', `/api/documents/${b.dataset.del}`); toast('Document détruit — action journalisée'); refresh();
+  });
+  if ($('#up-doc')) $('#up-doc').onclick = () => {
+    openDialog(`<h3>Archiver un document</h3>
+      <form id="f-doc" class="grid" style="margin-top:.6rem">
+        <div class="cols">
+          <div><label>Salarié</label><select name="employee_id">${employees.map((e) => `<option value="${e.id}">${esc(e.name)}</option>`).join('')}</select></div>
+          <div><label>Dossier</label><select name="folder"><option>contrat</option><option>paie</option><option>attest</option><option>medical</option><option>perso</option></select></div>
+        </div>
+        <div><label>Fichier (8 Mo max)</label><input name="file" type="file" required></div>
+        <div class="row" style="justify-content:flex-end"><button type="button" class="btn btn-ghost" id="f-cancel">Annuler</button><button class="btn btn-primary">Chiffrer &amp; archiver</button></div>
+      </form>`);
+    $('#f-cancel').onclick = closeDialog;
+    $('#f-doc').onsubmit = async (ev) => {
+      ev.preventDefault();
+      const fd = new FormData(ev.target);
+      const file = fd.get('file');
+      const buf = await file.arrayBuffer();
+      const b64 = btoa(String.fromCharCode(...new Uint8Array(buf)));
+      try {
+        await api('POST', '/api/documents', { employee_id: Number(fd.get('employee_id')), folder: fd.get('folder'), name: file.name, mime: file.type || 'application/octet-stream', content_base64: b64 });
+        closeDialog(); toast('Document chiffré et archivé'); refresh();
+      } catch (e) { toast(e.message, true); }
+    };
+  };
+}
+
+/* ===================== Abonnement ===================== */
+async function renderBilling(box) {
+  const b = await api('GET', '/api/billing');
+  const plan = b.plans.find((p) => p.id === b.plan) || b.plans[0];
+  const canAdmin = ME.role === 'admin';
+  box.innerHTML = `
+    <div class="flex-between"><h2>Abonnement &amp; facturation</h2>
+      <span class="muted">Plan ${esc(plan.name)} · ${money(plan.price_cents / 100, COMPANY.currency)} / mois HT · TVA ${(b.tva_rate * 100).toFixed(0)} %</span></div>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-top:.8rem">
+      ${b.plans.map((p) => `<div class="card" ${p.id === b.plan ? 'style="box-shadow:0 0 0 2px rgba(23,138,76,.35)"' : ''}>
+        <div class="flex-between"><strong>${esc(p.name)}</strong>${p.id === b.plan ? '<span class="badge b-green">Actuel</span>' : ''}</div>
+        <div class="kpi" style="font-size:1.2rem">${money(p.price_cents / 100, COMPANY.currency)}<span class="muted" style="font-size:.75rem"> /mois</span></div>
+        <div class="muted">jusqu'à ${p.max_emp} employés · ${b.seats} facturés</div>
+        ${canAdmin && p.id !== b.plan ? `<button class="btn btn-primary" style="margin-top:.6rem" data-plan="${p.id}">Choisir ce plan</button>` : ''}
+      </div>`).join('')}
+    </div>
+    <div class="card" style="margin-top:.9rem;overflow:auto">
+      <div class="flex-between"><h3 style="font-size:1rem">Factures</h3>
+        ${canAdmin ? '<button class="btn btn-ghost" id="gen-inv">Émettre une facture du mois</button>' : ''}</div>
+      <table style="margin-top:.5rem"><thead><tr><th>Référence</th><th>Période</th><th>Sièges</th><th>Montant HT</th><th>TVA</th><th>Statut</th><th></th></tr></thead>
+      <tbody>${b.invoices.map((i) => `<tr><td><code>${esc(i.ref)}</code></td><td>${esc(i.period)}</td><td>${i.seats}</td>
+        <td>${money(i.amount_cents / 100, COMPANY.currency)}</td><td>${money(i.tva_cents / 100, COMPANY.currency)}</td>
+        <td><span class="badge ${i.status === 'Payée' ? 'b-green' : 'b-warn'}">${esc(i.status)}</span></td>
+        <td class="row"><button class="btn btn-ghost" data-inv-pdf="${i.id}">PDF</button>
+        ${canAdmin && i.status !== 'Payée' ? `<button class="btn btn-primary" data-pay="${i.id}">Payer</button>` : ''}</td></tr>`).join('')}
+      </tbody></table>
+    </div>
+    <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:.9rem">
+      <div class="card"><h3 style="font-size:1rem">Moyen de paiement</h3>
+        <div class="row">${['Airtel Money', 'Moov Money', 'Virement bancaire', 'Carte bancaire'].map((m) => `<button class="btn ${b.pay_method === m ? 'btn-open' : 'btn-ghost'}" data-method="${m}">${m}</button>`).join('')}</div>
+        <div class="muted" style="margin-top:.5rem">Fournisseurs disponibles :
+          ${b.providers.map((p) => `<span class="badge ${p.configured ? 'b-green' : 'b-blue'}">${esc(p.label)}${p.configured ? '' : ' (non configuré)'}</span>`).join(' ')}</div>
+      </div>
+      <div class="card"><h3 style="font-size:1rem">Règlements</h3>
+        <div class="muted">${b.payments.length ? b.payments.map((p) => `${dateFr(p.created_at)} — ${esc(p.provider)} / ${esc(p.method || '')} — ${money(p.amount_cents / 100, COMPANY.currency)} (${esc(p.status)})`).join('<br>') : 'aucun règlement'}</div>
+      </div>
+    </div>`;
+  box.querySelectorAll('[data-plan]').forEach((x) => x.onclick = async () => {
+    try { await api('POST', '/api/billing/plan', { plan: x.dataset.plan }); toast('Plan mis à jour'); refresh(); } catch (e) { toast(e.message, true); }
+  });
+  box.querySelectorAll('[data-method]').forEach((x) => x.onclick = async () => {
+    await api('POST', '/api/billing/pay-method', { method: x.dataset.method }); toast('Moyen de paiement enregistré'); refresh();
+  });
+  box.querySelectorAll('[data-inv-pdf]').forEach((x) => x.onclick = () => download(`/api/billing/invoices/${x.dataset.inv-pdf}/pdf`, 'facture.pdf').catch((e) => toast(e.message, true)));
+  box.querySelectorAll('[data-pay]').forEach((x) => x.onclick = () => openPayment(Number(x.dataset.pay), b));
+  if ($('#gen-inv')) $('#gen-inv').onclick = async () => {
+    try { const r = await api('POST', '/api/billing/invoices/generate', {}); toast('Facture ' + r.ref + ' émise'); refresh(); } catch (e) { toast(e.message, true); }
+  };
+}
+
+function openPayment(invoiceId, b) {
+  openDialog(`<h3>Régler la facture</h3>
+    <form id="f-pay" class="grid" style="margin-top:.6rem">
+      <div class="cols">
+        <div><label>Fournisseur de paiement</label><select name="provider">
+          ${b.providers.map((p) => `<option value="${p.key}" ${p.configured ? '' : 'disabled'}>${esc(p.label)}${p.configured ? '' : ' — non configuré'}</option>`).join('')}</select></div>
+        <div><label>Moyen</label><select name="method"><option>Airtel Money</option><option>Moov Money</option><option>Virement bancaire</option><option>Carte bancaire</option></select></div>
+        <div><label>Téléphone (mobile money)</label><input name="phone" placeholder="+241 06 …"></div>
+      </div>
+      <div class="note">Le bac à sable simule la confirmation de l'opérateur. En production, CinetPay / PayDunya / Flutterwave renvoient une demande de validation sur le téléphone de l'abonné, puis un webhook signé confirme le règlement.</div>
+      <div class="row" style="justify-content:flex-end"><button type="button" class="btn btn-ghost" id="f-cancel">Annuler</button><button class="btn btn-primary">Initier le paiement</button></div>
+    </form>`);
+  $('#f-cancel').onclick = closeDialog;
+  $('#f-pay').onsubmit = async (ev) => {
+    ev.preventDefault();
+    const payload = Object.fromEntries(new FormData(ev.target).entries());
+    try {
+      const r = await api('POST', `/api/billing/invoices/${invoiceId}/pay`, payload);
+      closeDialog();
+      toast(r.instructions || 'Paiement initié');
+      refresh();
+    } catch (e) { toast(e.message, true); }
+  };
+}
+
+/* ===================== Conformité ===================== */
+async function renderCompliance(box) {
+  const c = await api('GET', '/api/compliance');
+  const canAdmin = ME.role === 'admin';
+  box.innerHTML = `
+    <h2>Conformité &amp; données personnelles</h2>
+    <div class="muted">Loi n°001/2011 du 25 septembre 2011 (Gabon) — déclaration des traitements à l'APDPVP · ${esc(c.hosting)}</div>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin-top:.8rem">
+      <div class="card"><div class="muted">Déclaration APDPVP</div><div class="kpi" style="font-size:1.1rem">${esc(c.apdpvp.status)}</div>
+        <div class="muted">Récépissé : ${esc(c.apdpvp.num || '—')} ${c.apdpvp.date ? 'du ' + dateFr(c.apdpvp.date) : ''}</div>
+        ${canAdmin ? `<button class="btn btn-ghost" style="margin-top:.5rem" id="apdpvp">Mettre à jour</button>` : ''}</div>
+      <div class="card"><div class="muted">Barèmes de paie</div>
+        <div class="kpi" style="font-size:1.1rem">${c.company.payroll_validated_by ? 'Validés' : 'Non validés'}</div>
+        <div class="muted">${esc(c.company.payroll_validated_by || 'En attente du cabinet d\'expertise-comptable')}</div>
+        ${canAdmin ? `<button class="btn btn-ghost" style="margin-top:.5rem" id="payroll-val">Enregistrer la validation</button>` : ''}</div>
+      <div class="card"><div class="muted">Hébergement &amp; transferts</div><div class="kpi" style="font-size:1.1rem">${esc(c.hosting)}</div>
+        <div class="muted">Article 94 : aucun transfert hors Gabon sans niveau de protection suffisant.</div></div>
+    </div>
+    <h3 style="font-size:1rem;margin-top:1rem">Registre des traitements</h3>
+    <div class="card" style="overflow:auto"><table><thead><tr><th>Traitement</th><th>Base légale</th><th>Données</th><th>Conservation</th><th>Destinataires</th></tr></thead>
+      <tbody>${c.registry.map((r) => `<tr>${r.map((x) => `<td>${esc(x)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+    <div class="grid" style="grid-template-columns:1fr 1fr;margin-top:.9rem">
+      <div class="card"><h3 style="font-size:1rem">Durées de conservation</h3>
+        <div class="muted">${c.retention.map((r) => `${esc(r[0])} — <strong>${esc(r[1])}</strong> (${esc(r[2])})`).join('<br>')}</div>
+        <h3 style="font-size:1rem;margin-top:.8rem">Droits des personnes</h3>
+        <div class="muted">${c.rights.join(' · ')} — export JSON disponible depuis la fiche salarié.</div></div>
+      <div class="card"><h3 style="font-size:1rem">Sécurité mise en œuvre</h3>
+        <div class="muted">${Object.entries(c.security).map(([k, v]) => `<strong>${esc(k)}</strong> : ${esc(v)}`).join('<br>')}</div></div>
+    </div>`;
+  if ($('#apdpvp')) $('#apdpvp').onclick = () => {
+    openDialog(`<h3>Déclaration APDPVP</h3>
+      <form id="f-ap" class="grid" style="margin-top:.6rem">
+        <div><label>Numéro de récépissé</label><input name="num" value="${esc(c.apdpvp.num || '')}" placeholder="RCP-2026-0000"></div>
+        <div><label>Date de délivrance / renouvellement</label><input name="date" type="date" value="${c.apdpvp.date || new Date().toISOString().slice(0, 10)}"></div>
+        <div><label>Statut</label><select name="status"><option>À jour</option><option>À renouveler</option><option>Non déclaré</option></select></div>
+        <div class="row" style="justify-content:flex-end"><button type="button" class="btn btn-ghost" id="f-cancel">Annuler</button><button class="btn btn-primary">Enregistrer</button></div>
+      </form>`);
+    $('#f-cancel').onclick = closeDialog;
+    $('#f-ap').onsubmit = async (ev) => {
+      ev.preventDefault();
+      await api('POST', '/api/compliance/apdpvp', Object.fromEntries(new FormData(ev.target).entries()));
+      closeDialog(); toast('Déclaration APDPVP enregistrée'); refresh();
+    };
+  };
+  if ($('#payroll-val')) $('#payroll-val').onclick = () => {
+    openDialog(`<h3>Validation des barèmes de paie</h3>
+      <div class="note">Cette validation engage l'entreprise : elle confirme que les taux de cotisations et d'impôt ont été vérifiés par un professionnel.</div>
+      <form id="f-val" class="grid" style="margin-top:.6rem">
+        <div><label>Cabinet / expert-comptable</label><input name="expert_name" required placeholder="Ex. : Cabinet Fiduciaire de l'Estuaire"></div>
+        <div><label>Référence de la validation</label><input name="reference" placeholder="VAL-2026-09"></div>
+        <div class="row" style="justify-content:flex-end"><button type="button" class="btn btn-ghost" id="f-cancel">Annuler</button><button class="btn btn-primary">Enregistrer la validation</button></div>
+      </form>`);
+    $('#f-cancel').onclick = closeDialog;
+    $('#f-val').onsubmit = async (ev) => {
+      ev.preventDefault();
+      await api('POST', '/api/compliance/payroll-validation', Object.fromEntries(new FormData(ev.target).entries()));
+      closeDialog(); toast('Barèmes validés — les bulletins peuvent être émis'); refresh();
+    };
+  };
+}
+
+/* ===================== Comptes & accès ===================== */
+const ROLE_BADGE = { admin: 'b-red', rh: 'b-green', manager: 'b-blue', employee: 'b-warn' };
+function motDePasseProvisoire() {
+  return 'Rh' + Math.random().toString(36).slice(2, 8) + '!' + Math.floor(Math.random() * 90 + 10);
+}
+
+async function renderUsers(box) {
+  const d = await api('GET', '/api/users');
+  box.innerHTML = `
+    <div class="flex-between"><h2>Comptes &amp; accès</h2>
+      <div class="row"><span class="muted">${d.users.length} compte(s)</span>
+        <button class="btn btn-primary" id="new-user">Nouveau compte</button></div></div>
+    <div class="note" style="margin-top:.7rem">Chaque salarié reçoit un <strong>accès nominatif</strong> à son espace personnel
+      (<a href="/portail" target="_blank">/portail</a>) : il y consulte ses bulletins, ses documents, ses congés et exerce
+      ses droits sur ses données. Il ne voit ni les autres salariés, ni la masse salariale, ni la facturation.</div>
+    <div class="card" style="margin-top:.8rem;overflow:auto">
+      <table><thead><tr><th>Nom</th><th>Email</th><th>Rôle</th><th>Dossier salarié</th><th>2FA</th><th>Dernière connexion</th><th></th></tr></thead>
+      <tbody>${d.users.map((u) => `<tr>
+        <td>${esc(u.name)}</td><td>${esc(u.email)}</td>
+        <td><span class="badge ${ROLE_BADGE[u.role] || 'b-blue'}">${esc(u.role)}</span></td>
+        <td>${u.matricule ? `<code>${esc(u.matricule)}</code> <span class="muted">${esc(u.employee_name || '')}</span>` : '<span class="muted">— personnel RH</span>'}</td>
+        <td>${u.twofa_enabled ? '<span class="dot dot-green"></span>activée' : '<span class="dot dot-amber"></span>désactivée'}</td>
+        <td class="muted">${u.last_login_at ? new Date(u.last_login_at).toLocaleString('fr-FR') : 'jamais connecté'}</td>
+        <td class="row"><button class="btn btn-ghost" data-reset="${u.id}" data-email="${esc(u.email)}">Réinitialiser</button></td>
+      </tr>`).join('')}</tbody></table>
+    </div>
+    ${d.sans_compte.length ? `<div class="card" style="margin-top:.8rem">
+      <h3 style="font-size:.95rem">Salariés sans accès au portail (${d.sans_compte.length})</h3>
+      <div class="muted">${d.sans_compte.map((e) => esc(e.name) + ' (' + esc(e.matricule) + ')').join(' · ')}</div>
+      <div class="muted" style="margin-top:.35rem">Créez un compte « employé » rattaché au dossier pour leur ouvrir le portail.</div></div>` : ''}`;
+  $('#new-user').onclick = () => openNewUser(d);
+  box.querySelectorAll('[data-reset]').forEach((b) => b.onclick = () => openResetUser(b.dataset.reset, b.dataset.email));
+}
+
+function openNewUser(d) {
+  const propose = motDePasseProvisoire();
+  openDialog(`
+    <h3>Nouveau compte</h3>
+    <div class="muted">Un rôle « employé » ouvre l'espace salarié et doit être rattaché à un dossier (accès limité à ce dossier).
+      Les rôles « manager », « rh » et « admin » utilisent la console RH PLUS.</div>
+    <form id="f-user" class="grid" style="margin-top:.8rem">
+      <div><label>Dossier salarié</label>
+        <select name="employee_id">
+          <option value="">— aucun (personnel RH) —</option>
+          ${d.sans_compte.map((e) => `<option value="${e.id}">${esc(e.matricule)} · ${esc(e.name)}</option>`).join('')}
+        </select></div>
+      <div class="cols">
+        <div><label>Nom affiché</label><input name="name" placeholder="Prénom Nom"></div>
+        <div><label>Rôle</label><select name="role">
+          <option value="employee">employé (portail salarié)</option>
+          <option value="manager">manager</option><option value="rh">rh</option><option value="admin">admin</option>
+        </select></div>
+      </div>
+      <div><label>Email professionnel</label><input name="email" type="email" required placeholder="prenom.nom@entreprise.ga"></div>
+      <div><label>Mot de passe provisoire (8 caractères minimum)</label><input name="password" value="${esc(propose)}" required></div>
+      <div class="note">Communiquez ce mot de passe au salarié : il peut le changer à la première connexion.
+        L'accès est protégé par une vérification en deux étapes.</div>
+      <div class="row" style="justify-content:flex-end">
+        <button type="button" class="btn btn-ghost" id="f-cancel">Annuler</button>
+        <button type="submit" class="btn btn-primary">Créer le compte</button>
+      </div>
+    </form>`);
+  $('#f-cancel').onclick = closeDialog;
+  $('#f-user').onsubmit = async (ev) => {
+    ev.preventDefault();
+    try {
+      const b = Object.fromEntries(new FormData(ev.target).entries());
+      if (!b.employee_id) delete b.employee_id;
+      const r = await api('POST', '/api/users', b);
+      closeDialog();
+      toast('Compte créé — ' + r.email);
+      refresh();
+    } catch (e) { toast(e.message, true); }
+  };
+}
+
+function openResetUser(id, email) {
+  openDialog(`
+    <h3>Réinitialiser l'accès</h3>
+    <div class="muted">${esc(email)}</div>
+    <form id="f-reset" class="grid" style="margin-top:.8rem">
+      <div><label>Nouveau mot de passe provisoire</label><input name="password" value="${esc(motDePasseProvisoire())}" required></div>
+      <label style="display:flex;gap:.5rem;align-items:center;text-transform:none;font-size:.84rem;color:var(--slate)">
+        <input type="checkbox" name="revoke_sessions" checked style="width:auto"> Fermer immédiatement les sessions ouvertes
+      </label>
+      <div class="row" style="justify-content:flex-end">
+        <button type="button" class="btn btn-ghost" id="f-cancel">Annuler</button>
+        <button type="submit" class="btn btn-primary">Appliquer</button>
+      </div>
+    </form>`);
+  $('#f-cancel').onclick = closeDialog;
+  $('#f-reset').onsubmit = async (ev) => {
+    ev.preventDefault();
+    try {
+      const b = Object.fromEntries(new FormData(ev.target).entries());
+      await api('PATCH', '/api/users/' + id, { password: b.password, revoke_sessions: !!b.revoke_sessions });
+      closeDialog();
+      toast('Accès réinitialisé — communiquez le nouveau mot de passe');
+      refresh();
+    } catch (e) { toast(e.message, true); }
+  };
+}
+
+/* ===================== Journal ===================== */
+async function renderAudit(box) {
+  const { entries } = await api('GET', '/api/audit');
+  box.innerHTML = `<h2>Journal d'activité</h2>
+    <div class="muted">Traçabilité horodatée de toutes les actions sensibles — conservée 12 mois.</div>
+    <div class="card" style="margin-top:.8rem;overflow:auto"><table><thead><tr><th>Date</th><th>Acteur</th><th>Rôle</th><th>Action</th><th>Détails</th><th>IP</th></tr></thead>
+    <tbody>${entries.map((e) => `<tr><td>${new Date(e.at).toLocaleString('fr-FR')}</td><td>${esc(e.actor || '—')}</td><td>${esc(e.role || '—')}</td>
+      <td>${esc(e.action)}</td><td class="muted">${esc(e.details || '')}</td><td class="muted">${esc(e.ip || '—')}</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+/* ===================== Démarrage ===================== */
+(async function boot() {
+  try {
+    const me = await api('GET', '/api/auth/me');
+    ME = me.user; COMPANY = me.company; renderShell();
+  } catch { renderLogin(1); }
+})();
+</script>
+</body>
+</html>

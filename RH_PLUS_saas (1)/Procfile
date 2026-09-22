@@ -1,0 +1,3 @@
+# Hébergement d'applications (Railway, Scalingo, Clever Cloud, Heroku-like).
+# Ce serveur a besoin d'un disque persistant pour la base : voir RHPLUS_DATA_DIR.
+web: node src/server.js

@@ -1,0 +1,21 @@
+# /etc/systemd/system/rhplus.service
+[Unit]
+Description=RH PLUS — API et console SIRH
+After=network.target
+
+[Service]
+Type=simple
+User=rhplus
+WorkingDirectory=/opt/rhplus-saas
+EnvironmentFile=/opt/rhplus-saas/.env
+ExecStart=/usr/bin/node src/server.js
+Restart=always
+RestartSec=5
+# Durcissement
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/rhplus
+
+[Install]
+WantedBy=multi-user.target

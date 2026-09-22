@@ -1,0 +1,34 @@
+{
+  "name": "rhplus-saas",
+  "version": "0.1.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "RHPLUS_EXPOSE_2FA=1 node src/server.js",
+    "seed": "node scripts/seed.js",
+    "backup": "node src/backup.js",
+    "test": "node --test test/api.test.js test/console.test.js test/portail.test.js test/messaging.test.js",
+    "test:console": "node --test test/console.test.js",
+    "test:portail": "node --test test/portail.test.js",
+    "platform:admin": "node scripts/create-platform-admin.js",
+    "test:notifications": "node --test test/messaging.test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "UNLICENSED",
+  "description": "RH PLUS — logiciel SIRH multi-entreprises (API + console). Backend Node/Express, base SQLite, authentification 2FA, chiffrement AES-256-GCM, sauvegardes.",
+  "dependencies": {
+    "better-sqlite3": "^12.11.1",
+    "express": "^5.2.1",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
+    "nodemailer": "^10.0.10"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "private": true,
+  "devDependencies": {
+    "jsdom": "^29.1.1"
+  }
+}

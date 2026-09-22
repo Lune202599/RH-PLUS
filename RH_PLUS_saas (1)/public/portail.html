@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RH PLUS — Mon espace salarié</title>
+<style>
+  /* Carlito (métriquement compatible Calibri) auto-hébergée — aucune dépendance externe.
+     Licence SIL OFL 1.1 : public/fonts/OFL.txt */
+  @font-face { font-family: Carlito; font-weight: 400; font-style: normal; font-display: swap;
+    src: url("/fonts/carlito-regular.woff2") format("woff2"); }
+  @font-face { font-family: Carlito; font-weight: 700; font-style: normal; font-display: swap;
+    src: url("/fonts/carlito-bold.woff2") format("woff2"); }
+  :root { --forest: #178A4C; --forest-dark: #0E5C33; --blue: #1D6FD8; --slate: #33413A; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Calibri, Carlito, 'Segoe UI', system-ui, sans-serif; background: #fff; color: var(--slate); }
+  h1,h2,h3 { color: var(--forest-dark); margin: 0 0 .4rem; }
+  a { color: var(--blue); }
+  button { font-family: inherit; cursor: pointer; }
+  .btn { border: 0; border-radius: 9999px; padding: .55rem 1.1rem; font-size: .86rem; font-weight: 700; }
+  .btn-primary { background: linear-gradient(135deg,#178A4C,#22A85E); color: #fff; }
+  .btn-open { background: linear-gradient(135deg,#1D6FD8,#2E82EE); color: #fff; }
+  .btn-ghost { background: #fff; color: var(--slate); border: 1px solid rgba(51,65,58,.18); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  input, select, textarea { font-family: inherit; font-size: .88rem; padding: .5rem .65rem; border: 1px solid #C9D8D0; border-radius: 10px; width: 100%; background: #fff; }
+  label { font-size: .74rem; text-transform: uppercase; letter-spacing: .04em; color: #6B7C74; display: block; margin-bottom: .2rem; }
+  .card { background: #fff; border: 1px solid rgba(23,138,76,.14); border-radius: 14px; padding: 1rem; box-shadow: 0 1px 2px rgba(16,44,28,.05); }
+  .grid { display: grid; gap: .8rem; }
+  .kpi { font-size: 1.5rem; font-weight: 700; color: var(--forest-dark); }
+  .muted { color: #6B7C74; font-size: .82rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  th { text-align: left; font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: #6B7C74; padding: .55rem .6rem; background: #F6FAF7; }
+  td { padding: .55rem .6rem; border-top: 1px solid rgba(23,138,76,.08); }
+  .badge { display: inline-block; border-radius: 9999px; padding: .15rem .6rem; font-size: .72rem; font-weight: 700; }
+  .b-green { background: #E8F5EC; color: var(--forest-dark); }
+  .b-blue { background: #E8F1FD; color: #0E3E7A; }
+  .b-warn { background: #FEF0E6; color: #B45309; }
+  .b-red { background: #FDECEA; color: #C62A21; }
+  header.top { display: flex; align-items: center; gap: .8rem; padding: .7rem 1.1rem; border-bottom: 1px solid rgba(23,138,76,.14); position: sticky; top: 0; background: rgba(255,255,255,.94); backdrop-filter: blur(6px); z-index: 20; }
+  .logo { width: 34px; height: 34px; border-radius: 9999px; background: linear-gradient(135deg,#178A4C,#1D6FD8); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: .8rem; }
+  nav.tabs { display: flex; gap: .3rem; overflow-x: auto; padding: .5rem 1.1rem; border-bottom: 1px solid rgba(23,138,76,.12); position: sticky; top: 52px; background: #fff; z-index: 10; }
+  .tab { border: 0; background: transparent; padding: .45rem .8rem; border-radius: 9999px; font-size: .84rem; font-weight: 600; color: #4C5F56; white-space: nowrap; }
+  .tab.active { background: #E8F5EC; color: var(--forest-dark); }
+  main { padding: 1.1rem; max-width: 1100px; margin: 0 auto; }
+  .login-wrap { min-height: 100vh; display: grid; place-items: center; padding: 1.5rem; background: #fff; }
+  .login-box { width: 100%; max-width: 420px; }
+  .row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: .7rem; }
+  .note { background: #F6FAF7; border-left: 3px solid var(--forest); border-radius: 10px; padding: .6rem .8rem; font-size: .82rem; color: #3C4F46; }
+  .warn { background: #FEF7EC; border-left: 3px solid #E09F1F; border-radius: 10px; padding: .6rem .8rem; font-size: .82rem; color: #7A4E05; }
+  .toast { position: fixed; right: 1rem; bottom: 1rem; background: #0E5C33; color: #fff; padding: .7rem 1rem; border-radius: 12px; font-size: .85rem; max-width: 380px; box-shadow: 0 8px 24px rgba(0,0,0,.2); z-index: 50; }
+  .toast.err { background: #C62A21; }
+  .flex-between { display: flex; align-items: center; justify-content: space-between; gap: .6rem; flex-wrap: wrap; }
+  code { background: #F2F7F4; padding: .1rem .35rem; border-radius: 6px; font-size: .82rem; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 9999px; margin-right: .35rem; vertical-align: middle; }
+  .dot-green { background: #178A4C; } .dot-amber { background: #E09F1F; } .dot-red { background: #C62A21; } .dot-blue { background: #1D6FD8; }
+  .parcours { border-left: 2px solid #DCEBE1; margin-left: .3rem; padding-left: .9rem; }
+  .parcours li { list-style: none; margin-bottom: .6rem; position: relative; }
+  .parcours li::before { content: ''; position: absolute; left: -1.28rem; top: .35rem; width: 9px; height: 9px; border-radius: 9999px; background: var(--forest); }
+  dialog { border: 0; border-radius: 16px; padding: 0; width: min(560px, 94vw); box-shadow: 0 20px 50px rgba(12,40,24,.25); }
+  dialog::backdrop { background: rgba(15,40,26,.45); }
+  .dlg-body { padding: 1.1rem; }
+  .vault-note { display: inline-block; }
+  @media (max-width: 640px) { .hero-name { display: none; } }
+</style>
+</head>
+<body>
+<div id="app"><div class="login-wrap"><div class="login-box card">
+  <div class="row" style="gap:.6rem;margin-bottom:.9rem">
+    <div class="logo">RH</div>
+    <div><div style="font-weight:700;color:var(--forest-dark)">RH PLUS</div>
+      <div class="muted">Espace salarié — chargement en cours…</div></div>
+  </div>
+  <div class="note">
+    <noscript><strong>JavaScript est désactivé dans ce navigateur.</strong> L'espace salarié en a
+    besoin : activez JavaScript, puis rechargez cette page.</noscript>
+    <span id="boot-aide">Si ce message persiste, ouvrez la page directement dans un navigateur
+    (adresse du serveur RH PLUS) au lieu d'un aperçu intégré.</span>
+    <br><a href="/">Retour à la console RH PLUS</a>.
+  </div>
+</div></div></div>
+<div id="toasts"></div>
+<dialog id="dlg"><div class="dlg-body" id="dlg-body"></div></dialog>
+
+<script>
+/* ===================== Utilitaires ===================== */
+const $ = (sel) => document.querySelector(sel);
+const esc = (s) => String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const money = (n, cur = 'FCFA') => Math.round(Number(n || 0)).toLocaleString('fr-FR') + ' ' + cur;
+const dateFr = (d) => (d ? new Date(d).toLocaleDateString('fr-FR') : '—');
+const jours = (n) => (n === null || n === undefined ? '—' : (n < 0 ? 'échu' : n + ' jour' + (n > 1 ? 's' : '')));
+let ME = null, DATA = null, VIEW = 'accueil';
+// Jeton gardé en mémoire : le portail fonctionne même si le navigateur refuse le cookie.
+let SESSION = null;
+
+const ICON = {
+  home: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11 12 4l8 7v9H4z"/><path d="M10 20v-6h4v6"/></svg>',
+  user: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.3 3-5.5 7-5.5s7 2.2 7 5.5"/></svg>',
+  pay: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>',
+  leave: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+  vault: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
+  rights: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 4 6v6c0 4.4 3.4 8.2 8 9.5 4.6-1.3 8-5.1 8-9.5V6z"/></svg>',
+};
+const TABS = [
+  ['accueil', 'Accueil', ICON.home], ['profil', 'Mon profil', ICON.user], ['bulletins', 'Mes bulletins', ICON.pay],
+  ['conges', 'Mes congés', ICON.leave], ['documents', 'Mes documents', ICON.vault], ['droits', 'Mes droits', ICON.rights],
+];
+
+function toast(msg, err) {
+  const el = document.createElement('div');
+  el.className = 'toast' + (err ? ' err' : '');
+  el.textContent = msg;
+  $('#toasts').appendChild(el);
+  setTimeout(() => el.remove(), 5200);
+}
+
+async function api(method, url, body) {
+  const headers = { 'content-type': 'application/json' };
+  if (SESSION) headers.authorization = 'Bearer ' + SESSION;
+  const res = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined, credentials: 'same-origin' });
+  const type = res.headers.get('content-type') || '';
+  if (type.includes('application/json')) {
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erreur serveur');
+    return data;
+  }
+  if (!res.ok) throw new Error('Erreur ' + res.status);
+  return res.blob();
+}
+
+async function telecharger(url, nom) {
+  const blob = await api('GET', url);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = nom;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function openDialog(html) { $('#dlg-body').innerHTML = html; $('#dlg').showModal(); }
+function closeDialog() { $('#dlg').close(); }
+
+/* ===================== Connexion ===================== */
+function renderLogin(step, ctx) {
+  $('#app').innerHTML = `
+    <div class="login-wrap"><div class="login-box card">
+      <div class="row" style="gap:.6rem;margin-bottom:.9rem">
+        <div class="logo">RH</div>
+        <div><div style="font-weight:700;color:var(--forest-dark)">RH PLUS</div><div class="muted">Mon espace salarié — connexion sécurisée</div></div>
+      </div>
+      <div id="login-step1" style="display:${step === 2 ? 'none' : 'block'}">
+        <h3 style="font-size:1.05rem">Connexion</h3>
+        <div class="grid" style="margin-top:.6rem">
+          <div><label>Email professionnel</label><input id="lg-email" type="email" autocomplete="username" value="${esc((ctx && ctx.email) || 'employe@rhplus.ga')}"></div>
+          <div><label>Mot de passe</label><input id="lg-pass" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+          <button class="btn btn-primary" id="lg-go">Se connecter</button>
+          <div class="note">Compte de démonstration : <code>employe@rhplus.ga</code> · mot de passe <code>RhPlus!2026</code>.<br>
+            Vous êtes gestionnaire RH ou dirigeant ? <a href="/">Ouvrir la console RH PLUS</a>.</div>
+        </div>
+      </div>
+      <div id="login-step2" style="display:${step === 2 ? 'block' : 'none'}">
+        <h3 style="font-size:1.05rem">Vérification en deux étapes</h3>
+        <p class="muted">Un code à 6 chiffres a été envoyé au titulaire du compte (SMS / email).</p>
+        <div class="grid" style="margin-top:.6rem">
+          <div><label>Code de vérification</label><input id="lg-code" inputmode="numeric" maxlength="6" placeholder="123456"></div>
+          <button class="btn btn-primary" id="lg-verify">Valider le code</button>
+          <button class="btn btn-ghost" id="lg-back">Revenir</button>
+          ${ctx && ctx.dev ? `<div class="warn">Mode démonstration — code affiché : <strong>${esc(ctx.dev)}</strong></div>` : ''}
+        </div>
+      </div>
+    </div></div>`;
+
+  const email = () => ($('#lg-email') ? $('#lg-email').value.trim() : (ctx && ctx.email));
+  if ($('#lg-go')) $('#lg-go').onclick = async () => {
+    try {
+      const r = await api('POST', '/api/auth/login', { email: email(), password: $('#lg-pass').value });
+      if (r.step === '2fa') renderLogin(2, { email: email(), dev: r.dev_code });
+      else await apresConnexion();
+    } catch (e) { toast(e.message, true); }
+  };
+  if ($('#lg-verify')) $('#lg-verify').onclick = async () => {
+    try {
+      const r = await api('POST', '/api/auth/verify', { email: email(), code: $('#lg-code').value.trim() });
+      if (r && r.token) SESSION = r.token;
+      await apresConnexion();
+    } catch (e) { toast(e.message, true); }
+  };
+  if ($('#lg-back')) $('#lg-back').onclick = () => renderLogin(1, { email: email() });
+  if ($('#lg-pass')) $('#lg-pass').onkeydown = (e) => { if (e.key === 'Enter') $('#lg-go').click(); };
+  if ($('#lg-code')) $('#lg-code').onkeydown = (e) => { if (e.key === 'Enter') $('#lg-verify').click(); };
+}
+
+async function apresConnexion() {
+  const me = await api('GET', '/api/auth/me');
+  ME = me.user;
+  DATA = await api('GET', '/api/me/overview');
+  renderShell();
+}
+
+/* ===================== Coquille ===================== */
+function renderShell() {
+  const co = DATA.company || {};
+  const e = DATA.employee;
+  $('#app').innerHTML = `
+    <header class="top">
+      <div class="logo">RH</div>
+      <div style="line-height:1.15">
+        <div style="font-weight:700;color:var(--forest-dark)">RH PLUS</div>
+        <div class="muted">${esc(co.name || '')} · Mon espace salarié</div>
+      </div>
+      <div class="row" style="margin-left:auto">
+        <span class="badge b-green">${esc(e ? e.matricule : ME.role)}</span>
+        <span class="muted hero-name">${esc(ME.name)}</span>
+        <button class="btn btn-ghost" id="logout">Déconnexion</button>
+      </div>
+    </header>
+    ${DATA.linked === false ? '' : `<nav class="tabs">${TABS.map(([k, l, i]) => `<button class="tab" data-tab="${k}">${i} ${l}</button>`).join('')}</nav>`}
+    <main id="view"></main>`;
+  $('#logout').onclick = async () => {
+    try { await api('POST', '/api/auth/logout'); } catch { /* jeton déjà expiré */ }
+    SESSION = null; ME = null; DATA = null; renderLogin(1);
+  };
+  document.querySelectorAll('.tab').forEach((b) => b.onclick = () => show(b.dataset.tab));
+  if (DATA.linked === false) {
+    $('#view').innerHTML = `<div class="card"><h2>Compte sans dossier salarié</h2>
+      <div class="muted">${esc(DATA.reason || '')} Votre administrateur RH peut rattacher votre compte à un dossier depuis la console RH PLUS.</div>
+      <div class="row" style="margin-top:.8rem"><a class="btn btn-ghost" href="/">Ouvrir la console RH PLUS</a></div></div>`;
+    return;
+  }
+  show('accueil');
+}
+
+function highlight(tab) {
+  document.querySelectorAll('.tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === tab));
+}
+async function show(tab) {
+  VIEW = tab; highlight(tab);
+  const box = $('#view');
+  box.innerHTML = '<div class="card muted">Chargement…</div>';
+  try {
+    if (tab === 'accueil') return renderAccueil(box);
+    if (tab === 'profil') return renderProfil(box);
+    if (tab === 'bulletins') return renderBulletins(box);
+    if (tab === 'conges') return renderConges(box);
+    if (tab === 'documents') return renderDocuments(box);
+    if (tab === 'droits') return renderDroits(box);
+  } catch (e) { box.innerHTML = `<div class="card"><strong>Erreur :</strong> ${esc(e.message)}</div>`; }
+}
+const refresh = async () => { DATA = await api('GET', '/api/me/overview'); show(VIEW); };
+
+function carte(titre, valeur, sous, couleur) {
+  return `<div class="card"><div class="muted">${esc(titre)}</div>
+    <div class="kpi" style="${couleur ? 'color:' + couleur : ''}">${valeur}</div>
+    <div class="muted">${sous || ''}</div></div>`;
+}
+
+/* ===================== Accueil ===================== */
+function renderAccueil(box) {
+  const e = DATA.employee, cur = DATA.company.currency;
+  const contrat = DATA.contracts[0];
+  const dernier = DATA.payslips[0];
+  const b = DATA.leave_balance;
+  const prochaine = DATA.leaves.filter((l) => l.status === 'Validée' && new Date(l.from_date) > new Date()).sort((a, c) => (a.from_date < c.from_date ? -1 : 1))[0];
+  box.innerHTML = `
+    <div class="flex-between">
+      <div><h2>Bonjour ${esc(String(e.name).split(' ')[0])}</h2>
+        <div class="muted">${esc(e.role || '')} · ${esc(e.dept || '')} · entré${e.hired && e.hired < '2000' ? '' : 'e'} le ${dateFr(e.hired)}</div></div>
+      <span class="badge ${e.status === 'Présent' ? 'b-green' : 'b-blue'}">${esc(e.status)}</span>
+    </div>
+
+    ${DATA.alerts.length ? DATA.alerts.map((a) => `<div class="warn" style="margin-top:.8rem">
+      <span class="dot ${a.level === 'critique' ? 'dot-red' : a.level === 'eleve' ? 'dot-amber' : 'dot-blue'}"></span>
+      Mon contrat ${esc(a.type)} arrive à échéance le ${dateFr(a.end_date)} — ${jours(a.days)}. Le service RH prépare la suite.</div>`).join('') : ''}
+
+    <div class="cols" style="margin:.9rem 0 1rem">
+      ${carte('Mon contrat', esc(contrat ? contrat.type : '—'), contrat && contrat.end_date ? 'du ' + dateFr(contrat.start_date) + ' au ' + dateFr(contrat.end_date) : 'depuis le ' + dateFr(contrat ? contrat.start_date : null))}
+      ${carte('Dernier bulletin', dernier ? money(dernier.net, cur) : '—', dernier ? 'période ' + esc(dernier.period) + ' · net à payer' : 'aucun bulletin')}
+      ${carte('Congés à prendre', b.solde_estime + ' j', 'sur l’année de référence : ' + b.acquis_estime + ' j acquis − ' + b.pris + ' j pris')}
+      ${carte('Demandes en attente', b.en_attente + ' j', 'en cours de validation')}
+    </div>
+
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
+      <div class="card">
+        <h3 style="font-size:.98rem">Mes accès rapides</h3>
+        <div class="row" style="margin-top:.6rem">
+          <button class="btn btn-open" id="go-bulletins">${ICON.pay} Mes bulletins</button>
+          <button class="btn btn-primary" id="go-conges">${ICON.leave} Demander un congé</button>
+          <button class="btn btn-ghost" id="go-documents">${ICON.vault} Mes documents</button>
+          <button class="btn btn-ghost" id="go-droits">${ICON.rights} Mes droits</button>
+        </div>
+        ${prochaine ? `<div class="note" style="margin-top:.8rem"><span class="dot dot-green"></span>
+          Prochain congé validé : <strong>${esc(prochaine.type)}</strong> du ${dateFr(prochaine.from_date)} au ${dateFr(prochaine.to_date)} (${prochaine.days} jour(s)).</div>` : ''}
+      </div>
+      <div class="card">
+        <h3 style="font-size:.98rem">Mon ancienneté</h3>
+        <div class="kpi">${Math.floor(DATA.seniority_months / 12)} an(s) ${DATA.seniority_months % 12} mois</div>
+        <div class="muted">Parcours et canal de recrutement visibles dans « Mon profil ».</div>
+        <div class="muted" style="margin-top:.5rem">Ma dernière connexion : ${dateFr(ME.last_login_at)}</div>
+      </div>
+    </div>`;
+  $('#go-bulletins').onclick = () => show('bulletins');
+  $('#go-conges').onclick = () => { show('conges'); setTimeout(() => $('#new-leave') && $('#new-leave').click(), 150); };
+  $('#go-documents').onclick = () => show('documents');
+  $('#go-droits').onclick = () => show('droits');
+}
+
+/* ===================== Mon profil ===================== */
+function renderProfil(box) {
+  const e = DATA.employee;
+  box.innerHTML = `
+    <h2>Mon profil</h2>
+    <div class="muted">Ces informations proviennent du dossier tenu par le service RH. Une erreur ? Demandez la rectification : c'est un droit.</div>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin-top:.8rem">
+      <div class="card">
+        <h3 style="font-size:.98rem">Identité & poste</h3>
+        <table>
+          <tbody>
+            <tr><td class="muted">Matricule</td><td><code>${esc(e.matricule)}</code></td></tr>
+            <tr><td class="muted">Nom</td><td>${esc(e.name)}</td></tr>
+            <tr><td class="muted">Poste</td><td>${esc(e.role || '—')}</td></tr>
+            <tr><td class="muted">Service</td><td>${esc(e.dept || '—')}</td></tr>
+            <tr><td class="muted">Contrat</td><td>${esc(e.contract)} · ${esc(e.status)}</td></tr>
+            <tr><td class="muted">Date d'entrée</td><td>${dateFr(e.hired)}</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3 style="font-size:.98rem">Coordonnées & données déclarées</h3>
+        <table>
+          <tbody>
+            <tr><td class="muted">Email</td><td>${esc(e.email || '—')}</td></tr>
+            <tr><td class="muted">Téléphone</td><td>${esc(e.phone || '—')}</td></tr>
+            <tr><td class="muted">N° CNSS</td><td>${esc(e.cnss_no || '—')} <span class="muted">(stocké chiffré)</span></td></tr>
+            <tr><td class="muted">Rémunération</td><td>${money(e.salary, DATA.company.currency)} brut</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:.8rem">
+      <h3 style="font-size:.98rem">Parcours & carrière</h3>
+      <div class="muted">Arrivée via : <strong>${esc(DATA.career.source)}</strong> · entrée le ${dateFr(DATA.career.entry.date)} comme ${esc(DATA.career.entry.role || '—')}</div>
+      <ul class="parcours" style="margin-top:.8rem">
+        ${DATA.career.steps.map((s) => `<li><strong>${dateFr(s.date)}</strong> — ${esc(s.type)}
+          <div class="muted">${esc(s.status)}${s.days_left !== undefined && s.days_left !== null ? ' · échéance dans ' + jours(s.days_left) : ''}</div></li>`).join('') || '<li class="muted">Aucun contrat enregistré</li>'}
+      </ul>
+    </div>`;
+}
+
+/* ===================== Mes bulletins ===================== */
+function renderBulletins(box) {
+  const cur = DATA.company.currency;
+  const nonValides = DATA.payslips.filter((p) => p.status !== 'émis');
+  box.innerHTML = `
+    <div class="flex-between"><h2>Mes bulletins de paie</h2>
+      <span class="muted">${DATA.payslips.length} bulletin(s) · téléchargeables en PDF</span></div>
+    ${DATA.payroll.validated ? '' : `<div class="warn" style="margin-top:.7rem"><span class="dot dot-amber"></span>
+      Les barèmes de paie de votre pays n'ont pas encore été validés par un expert-comptable : les bulletins restent en
+      <strong>brouillon</strong> et ne valent pas document officiel.</div>`}
+    <div class="card" style="margin-top:.8rem;overflow:auto">
+      <table><thead><tr><th>Période</th><th>Brut</th><th>Net à payer</th><th>Statut</th><th>Document</th></tr></thead>
+      <tbody>${DATA.payslips.map((p) => `<tr>
+        <td><strong>${esc(p.period)}</strong></td>
+        <td>${money(p.gross, cur)}</td>
+        <td><strong>${money(p.net, cur)}</strong></td>
+        <td><span class="badge ${p.status === 'émis' ? 'b-green' : 'b-warn'}">${esc(p.status || 'brouillon')}</span></td>
+        <td class="row"><button class="btn btn-open" data-pdf="${p.id}">Bulletin PDF</button></td></tr>`).join('')
+        || '<tr><td colspan="5" class="muted">Aucun bulletin pour le moment.</td></tr>'}
+      </tbody></table>
+    </div>
+    ${nonValides.length ? `<div class="note" style="margin-top:.7rem">Un bulletin en brouillon est une projection : il devient officiel après validation par le service RH.</div>` : ''}`;
+  box.querySelectorAll('[data-pdf]').forEach((b) => b.onclick = async () => {
+    try { await telecharger('/api/payslips/' + b.dataset.pdf + '/pdf', 'Bulletin_' + (DATA.employee.matricule || '') + '.pdf'); toast('Bulletin téléchargé'); }
+    catch (e) { toast(e.message, true); }
+  });
+}
+
+/* ===================== Mes congés ===================== */
+function renderConges(box) {
+  const b = DATA.leave_balance;
+  box.innerHTML = `
+    <div class="flex-between"><h2>Mes congés</h2>
+      <button class="btn btn-primary" id="new-leave">Demander un congé</button></div>
+    <div class="cols" style="margin:.8rem 0 1rem">
+      ${carte('Solde estimé', b.solde_estime + ' j', 'acquis ' + b.acquis_estime + ' j − pris ' + b.pris + ' j')}
+      ${carte('Jours pris', b.pris + ' j', 'congés annuels validés')}
+      ${carte('En attente', b.en_attente + ' j', 'demandes à valider')}
+    </div>
+    <div class="note">Le solde est une <strong>estimation indicative</strong> : 2,5 jours ouvrables par mois de présence,
+      calculés sur l'année de référence en cours depuis le ${dateFr(b.periode_reference)} (soit ${b.mois_reference} mois).
+      Le décompte officiel est tenu par le service RH, conforme à la convention collective applicable.</div>
+    <div class="card" style="margin-top:.8rem;overflow:auto">
+      <table><thead><tr><th>Type</th><th>Du</th><th>Au</th><th>Jours</th><th>Statut</th><th>Motif</th></tr></thead>
+      <tbody>${DATA.leaves.map((l) => `<tr>
+        <td>${esc(l.type)}</td><td>${dateFr(l.from_date)}</td><td>${dateFr(l.to_date)}</td><td>${l.days}</td>
+        <td><span class="badge ${l.status === 'Validée' ? 'b-green' : l.status === 'Refusée' ? 'b-red' : 'b-warn'}">${esc(l.status)}</span></td>
+        <td class="muted">${esc(l.reason || '—')}</td></tr>`).join('')
+        || '<tr><td colspan="6" class="muted">Aucune demande de congé.</td></tr>'}
+      </tbody></table>
+    </div>`;
+  $('#new-leave').onclick = openNewLeave;
+}
+
+function openNewLeave() {
+  const today = new Date().toISOString().slice(0, 10);
+  openDialog(`
+    <h3>Demander un congé</h3>
+    <div class="muted">Votre demande part au service RH qui la valide ou la refuse. Vous serez informé(e) dans votre espace.</div>
+    <form id="f-leave" class="grid" style="margin-top:.8rem">
+      <div><label>Type de congé</label>
+        <select name="type">
+          <option>Congé annuel</option><option>Congé maladie</option><option>Congé maternité</option>
+          <option>Congé exceptionnel</option><option>Absence non rémunérée</option>
+        </select></div>
+      <div class="cols">
+        <div><label>Du</label><input type="date" name="from_date" value="${today}" required></div>
+        <div><label>Au</label><input type="date" name="to_date" value="${today}" required></div>
+      </div>
+      <div><label>Motif (facultatif)</label><input name="reason" placeholder="Ex. : congé familial"></div>
+      <div class="row" style="justify-content:flex-end">
+        <button type="button" class="btn btn-ghost" id="f-cancel">Annuler</button>
+        <button type="submit" class="btn btn-primary">Envoyer la demande</button>
+      </div>
+    </form>`);
+  $('#f-cancel').onclick = closeDialog;
+  $('#f-leave').onsubmit = async (ev) => {
+    ev.preventDefault();
+    try {
+      const body = Object.fromEntries(new FormData(ev.target).entries());
+      const r = await api('POST', '/api/leaves', body);
+      closeDialog();
+      toast('Demande envoyée — ' + r.days + ' jour(s)');
+      await refresh();
+    } catch (e) { toast(e.message, true); }
+  };
+}
+
+/* ===================== Mes documents ===================== */
+function renderDocuments(box) {
+  const dossiers = { contrat: 'Contrat', paie: 'Paie', identite: 'Identité', diplome: 'Diplôme', sante: 'Santé', perso: 'Personnel', entreprise: 'Entreprise' };
+  box.innerHTML = `
+    <div class="flex-between"><h2>Mes documents</h2>
+      <span class="muted">${DATA.documents.length} pièce(s) · coffre-fort chiffré</span></div>
+    <div class="note" style="margin-top:.7rem"><span class="dot dot-green"></span>
+      Les pièces sont conservées chiffrées (AES-256-GCM). Chaque consultation est enregistrée dans le journal d'audit de l'entreprise.</div>
+    <div class="card" style="margin-top:.8rem;overflow:auto">
+      <table><thead><tr><th>Document</th><th>Dossier</th><th>Taille</th><th>Déposé le</th><th>Empreinte</th><th></th></tr></thead>
+      <tbody>${DATA.documents.map((d) => `<tr>
+        <td>${esc(d.name)}</td>
+        <td><span class="badge b-blue">${esc(dossiers[d.folder] || d.folder)}</span></td>
+        <td class="muted">${Math.max(1, Math.round(d.size / 1024))} Ko</td>
+        <td class="muted">${dateFr(d.created_at)}</td>
+        <td class="muted"><code>${esc(String(d.sha256 || '').slice(0, 10))}…</code></td>
+        <td class="row"><button class="btn btn-open" data-doc="${d.id}" data-name="${esc(d.name)}">Télécharger</button></td></tr>`).join('')
+        || '<tr><td colspan="6" class="muted">Aucun document dans votre coffre-fort. Le service RH peut y déposer vos contrats et attestations.</td></tr>'}
+      </tbody></table>
+    </div>`;
+  box.querySelectorAll('[data-doc]').forEach((b) => b.onclick = async () => {
+    try { await telecharger('/api/documents/' + b.dataset.doc + '/download', b.dataset.name); toast('Document téléchargé'); }
+    catch (e) { toast(e.message, true); }
+  });
+}
+
+/* ===================== Mes droits ===================== */
+function renderDroits(box) {
+  box.innerHTML = `
+    <h2>Mes droits sur mes données</h2>
+    <div class="muted">Loi n°001/2011 du 25 janvier 2011 (protection des données à caractère personnel, Gabon) — vos données de
+      gestion du personnel et de paie sont traitées par ${esc(DATA.company.name)}.</div>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin-top:.8rem">
+      <div class="card">
+        <h3 style="font-size:.98rem"><span class="dot dot-green"></span>Droit d'accès — immédiat</h3>
+        <div class="muted">Téléchargez l'ensemble des données que votre employeur détient sur vous : dossier, contrats, congés,
+          bulletins (détail du calcul) et parcours.</div>
+        <div class="row" style="margin-top:.7rem"><button class="btn btn-primary" id="export">Télécharger mes données</button></div>
+      </div>
+      <div class="card">
+        <h3 style="font-size:.98rem"><span class="dot dot-blue"></span>Rectification</h3>
+        <div class="muted">Une information inexacte (poste, coordonnées, date d'entrée) ? Demandez la correction au service RH,
+          qui dispose de l'écran prévu à cet effet. L'accès et la correction sont journalisés.</div>
+      </div>
+      <div class="card">
+        <h3 style="font-size:.98rem"><span class="dot dot-amber"></span>Effacement</h3>
+        <div class="muted">À la fin de votre contrat, votre dossier peut être anonymisé. Vos bulletins de paie sont conservés :
+          la loi impose leur conservation pour la paie et les cotisations sociales.</div>
+      </div>
+      <div class="card">
+        <h3 style="font-size:.98rem"><span class="dot dot-blue"></span>Opposition & portabilité</h3>
+        <div class="muted">Vous pouvez vous opposer à un traitement non obligatoire (ex. : photo ou géolocalisation) et
+          demander une copie réutilisable de vos données — c'est l'export ci-contre.</div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:.8rem">
+      <h3 style="font-size:.98rem">Qui contacter ?</h3>
+      <table style="margin-top:.4rem"><tbody>
+        <tr><td class="muted">Responsable du traitement</td><td>${esc(DATA.company.name)}${DATA.company.rep ? ' — ' + esc(DATA.company.rep) : ''}</td></tr>
+        <tr><td class="muted">Hébergement des données</td><td>${esc(DATA.company.hosting || '—')}</td></tr>
+        <tr><td class="muted">Autorité de contrôle</td><td>APDPVP — Commission nationale pour la protection des données à caractère personnel</td></tr>
+        <tr><td class="muted">Conservation</td><td>Bulletins et contrats : 50 ans (obligation légale) · Candidatures : 2 ans · Journaux d'accès : 12 mois</td></tr>
+      </tbody></table>
+      <div class="note" style="margin-top:.7rem">Toute consultation de vos documents par un membre du service RH est tracée.
+        Vous pouvez demander ce journal à votre employeur : il fait partie de votre droit d'accès.</div>
+    </div>`;
+  $('#export').onclick = async () => {
+    try {
+      await telecharger('/api/me/export', 'mes_donnees_' + (DATA.employee.matricule || '') + '.json');
+      toast('Export de vos données téléchargé');
+    } catch (e) { toast(e.message, true); }
+  };
+}
+
+/* ===================== Démarrage ===================== */
+(async function boot() {
+  try {
+    const me = await api('GET', '/api/auth/me');
+    ME = me.user;
+    DATA = await api('GET', '/api/me/overview');
+    renderShell();
+  } catch (err) { renderLogin(1); }
+})();
+</script>
+</body>
+</html>

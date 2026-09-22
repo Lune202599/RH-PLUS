@@ -1,0 +1,48 @@
+# Déploiement sur Render (https://render.com) — « Blueprint ».
+# Nécessaire : un service web AVEC disque persistant (la base SQLite vit sur le disque)
+# et les variables d'envoi SMS/email, sinon le serveur refuse de démarrer en production.
+services:
+  - type: web
+    name: rhplus-saas
+    runtime: docker
+    dockerfilePath: ./deploy/Dockerfile
+    plan: starter                 # un disque persistant n'existe qu'à partir de l'offre payante
+    healthCheckPath: /api/health
+    autoDeploy: true
+    disk:
+      name: rhplus-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: RHPLUS_DATA_DIR
+        value: /data
+      - key: RHPLUS_MASTER_KEY      # clé de chiffrement : générée une fois, à conserver
+        generateValue: true
+      - key: RHPLUS_SESSION_TTL_HOURS
+        value: "12"
+      # --- envoi des codes de connexion (obligatoire en production) ---
+      - key: RHPLUS_MAIL
+        value: smtp
+      - key: RHPLUS_MAIL_FROM
+        sync: false
+      - key: RHPLUS_SMTP_HOST
+        sync: false
+      - key: RHPLUS_SMTP_PORT
+        value: "587"
+      - key: RHPLUS_SMTP_USER
+        sync: false
+      - key: RHPLUS_SMTP_PASS
+        sync: false
+      - key: RHPLUS_SMS
+        value: http
+      - key: RHPLUS_SMS_URL
+        sync: false
+      - key: RHPLUS_SMS_KEY
+        sync: false
+      - key: RHPLUS_SMS_SENDER
+        value: RHPLUS
+      # --- paiement mobile money (facultatif au démarrage) ---
+      - key: RHPLUS_PAYMENT_PROVIDER
+        value: sandbox

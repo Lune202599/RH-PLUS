@@ -1,0 +1,54 @@
+# ---------------------------------------------------------------------------
+#  RH PLUS — configuration Fly.io
+#
+#  Déploiement complet :
+#    fly launch --no-deploy --copy-config
+#    fly volumes create rhplus_data --size 1 --region cdg --yes
+#    fly secrets set RHPLUS_MASTER_KEY=... RHPLUS_SMTP_HOST=... RHPLUS_SMS_URL=...
+#    fly deploy
+#
+#  Règles à ne pas enfreindre :
+#    · UNE SEULE machine (la base SQLite vit sur un volume unique) : jamais « fly scale count 2 »
+#    · le volume est indispensable : sans lui, la base serait perdue à chaque déploiement
+# ---------------------------------------------------------------------------
+app = "rhplus-saas"            # doit être unique sur Fly : « fly launch » vous proposera un nom libre
+primary_region = "cdg"         # Paris · plus proche du Gabon : "jnb" (Johannesburg)
+
+[build]
+  dockerfile = "deploy/Dockerfile.fly"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "3000"
+  RHPLUS_DATA_DIR = "/data"
+  RHPLUS_SESSION_TTL_HOURS = "12"
+  RHPLUS_BACKUP_KEEP = "14"
+  RHPLUS_PAYMENT_PROVIDER = "sandbox"
+  # Premier essai sans passerelle SMS/email : décommenter, puis RETIRER dès que
+  # RHPLUS_SMTP_* et RHPLUS_SMS_* sont renseignés (sinon les codes s'écrivent dans les journaux).
+  # RHPLUS_ALLOW_CONSOLE_MESSAGING = "1"
+
+[[mounts]]
+  source = "rhplus_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  # La machine reste allumée : sauvegardes planifiées (02:00), codes 2FA instantanés,
+  # alertes de contrats. En veille, ces tâches ne s'exécutent pas.
+  auto_stop_machines = false
+  min_machines_running = 1
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "25s"
+    method = "GET"
+    path = "/api/health"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+
+[deploy]
+  strategy = "immediate"       # une seule machine avec volume : pas de bascule bleu/vert
